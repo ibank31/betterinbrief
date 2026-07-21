@@ -1,0 +1,176 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "Seed_003",
+  "title": "AI Is Splitting Careers Into Two Tracks",
+  "status": "draft",
+  "accountPhase": "warmup",
+  "contentOrigin": "original",
+  "pillar": "ai_technology_work",
+  "formatFamily": "big_idea_explainer",
+  "voice": "af_sarah",
+  "musicLane": "technology_change",
+  "campaign": null,
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
+  "sources": [
+    {
+      "sourceId": "SRC01",
+      "url": "https://www.pwc.com/gx/en/services/ai/ai-jobs-barometer.html",
+      "publisher": "PwC",
+      "title": "2026 Global AI Jobs Barometer",
+      "publishedDate": "2026",
+      "accessedDate": "2026-07-21"
+    },
+    {
+      "sourceId": "SRC02",
+      "url": "https://www.oecd.org/en/publications/ai-and-skills_f843b352-en/full-report.html",
+      "publisher": "OECD",
+      "title": "AI and skills",
+      "publishedDate": "2025",
+      "accessedDate": "2026-07-21"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "C01",
+      "claim": "PwC's 2026 Global AI Jobs Barometer analysed more than 1 billion job ads across six continents.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C02",
+      "claim": "Professionalised roles are growing twice as fast as democratised roles, with 42% faster wage growth.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C03",
+      "claim": "Fewer than 1% of workers need advanced AI skills; most need digital skills, data interpretation, managerial and human skills.",
+      "sourceId": "SRC02",
+      "verified": true
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "statistic",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "AI isn't creating one job market. It's creating two.",
+      "visual": {
+        "eyebrow": "AI · CAREERS",
+        "statistic": "2",
+        "statisticSuffix": "TRACKS",
+        "headline": "AI is splitting careers in two",
+        "highlightedIndex": 1
+      }
+    },
+    {
+      "id": "S02",
+      "role": "comparison",
+      "type": "comparison",
+      "variant": "split",
+      "surface": "light",
+      "motion": "left_to_right",
+      "narration": "In one track, AI makes your output easier to copy. In the other... it makes your judgment more valuable.",
+      "visual": {
+        "eyebrow": "THE SPLIT",
+        "leftLabel": "TRACK ONE",
+        "leftValue": "OUTPUT",
+        "rightLabel": "TRACK TWO",
+        "rightValue": "JUDGMENT",
+        "verdict": "One gets copied. One gets paid.",
+        "subtitle": "AI commoditises output — and rewards judgment."
+      }
+    },
+    {
+      "id": "S03",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "PwC scanned over a billion job ads. Roles built on expertise are growing twice as fast — with 42% faster wage growth.",
+      "claims": [
+        "C01",
+        "C02"
+      ],
+      "visual": {
+        "eyebrow": "WHAT THE DATA SAYS",
+        "value": 42,
+        "decimals": 0,
+        "suffix": "%",
+        "label": "faster wage growth in expertise-driven roles",
+        "source": "SOURCE · PWC AI JOBS BAROMETER 2026",
+        "subtitle": "From 1 billion+ job ads across six continents."
+      }
+    },
+    {
+      "id": "S04",
+      "role": "correction",
+      "type": "correction",
+      "variant": "equation",
+      "surface": "light",
+      "motion": "sharp_correction",
+      "narration": "Here's the twist. Fewer than 1% of workers need advanced AI skills. Most need data fluency... and human judgment.",
+      "claims": [
+        "C03"
+      ],
+      "visual": {
+        "eyebrow": "THE TWIST",
+        "misconception": "AI SKILLS",
+        "correction": "JUDGMENT",
+        "symbol": "≠",
+        "subtitle": "Fewer than 1% of workers need advanced AI skills."
+      }
+    },
+    {
+      "id": "S05",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "statement",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "So don't just learn the tool. Move toward work where AI makes your judgment more valuable — not your output easier to copy.",
+      "visual": {
+        "eyebrow": "THE MOVE",
+        "setup": "Output gets copied. Judgment gets scarce.",
+        "outcome": "JUDGMENT",
+        "comparison": "> OUTPUT",
+        "question": "WHICH TRACK IS YOUR WORK ON?",
+        "subtitle": "Move where AI raises your value."
+      }
+    },
+    {
+      "id": "S06",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Build what AI makes scarce."
+      }
+    }
+  ],
+  "packaging": {
+    "youtubeTitle": "AI Is Splitting Careers Into Two Tracks",
+    "instagramCaption": "AI isn't creating one job market — it's creating two. Expertise-driven roles are growing 2x faster, with 42% higher wage growth (PwC, 1B+ job ads). The edge isn't output. It's judgment. #ai #careers #futureofwork",
+    "tiktokCaption": "AI is splitting careers into two tracks. Which one is your work on? #ai #careers #learnontiktok",
+    "hashtags": [
+      "ai",
+      "careers",
+      "futureofwork",
+      "work",
+      "jobs"
+    ]
+  }
+}
