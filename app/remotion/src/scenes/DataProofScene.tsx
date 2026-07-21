@@ -12,11 +12,11 @@ export type DataProofSceneProps = SceneBaseProps & {
   source: string;
 };
 
-export const DataProofScene: React.FC<DataProofSceneProps> = ({eyebrow, value, decimals = 1, suffix = "%", label, source, subtitle}) => {
+export const DataProofScene: React.FC<DataProofSceneProps> = ({eyebrow, value, decimals = 1, suffix = "%", label, source, subtitle, world, surface}) => {
   const frame = useCurrentFrame();
   const progress = interpolate(frame, [6, motion.emphasis], [0, 1], clamp);
   const shown = (value * progress).toFixed(decimals);
-  return <EditorialFrame background={colors.black} color={colors.white}>
+  return <EditorialFrame background={colors.black} color={colors.white} world={world} surface={surface}>
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 880}}>
       <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
       <div style={{marginTop: 114, fontSize: 280, lineHeight: .78, fontWeight: typography.weight.black, letterSpacing: -14, color: colors.white}}>{shown}<span style={{fontSize: 110, color: colors.orange, marginLeft: 14}}>{suffix}</span></div>

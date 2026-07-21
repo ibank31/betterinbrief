@@ -46,7 +46,8 @@ export function deriveRenderProps(locked, ttsManifest) {
       : Math.ceil((speech + limits.scenes.tailPadSec) * fps);
     scenes.push({
       id: scene.id, role: scene.role, type: scene.type, variant: scene.variant,
-      surface: scene.surface, motion: scene.motion, narration: scene.narration,
+      surface: scene.surface, motion: scene.motion, visualSystem: scene.visualSystem,
+      narration: scene.narration,
       audio: `audio/${locked.episodeId}/${scene.id}.wav`,
       timing: {from, durationInFrames, speechSeconds: Math.round(speech * 1000) / 1000},
       visual: scene.visual,

@@ -3,34 +3,356 @@
   "$id": "binb://schemas/episode/1.0",
   "title": "BinB Episode (authoring) v1.0",
   "type": "object",
-  "required": ["schemaVersion", "episodeId", "title", "status", "accountPhase", "contentOrigin", "pillar", "formatFamily", "voice", "musicLane", "campaign", "rights", "sources", "claims", "scenes", "packaging"],
+  "required": [
+    "schemaVersion",
+    "episodeId",
+    "title",
+    "status",
+    "accountPhase",
+    "contentOrigin",
+    "pillar",
+    "formatFamily",
+    "voice",
+    "musicLane",
+    "campaign",
+    "rights",
+    "sources",
+    "claims",
+    "scenes",
+    "packaging"
+  ],
   "additionalProperties": false,
   "properties": {
-    "schemaVersion": {"enum": ["1.0"]},
-    "episodeId": {"type": "string", "pattern": "^[A-Za-z0-9_-]{3,40}$"},
-    "title": {"type": "string", "minLength": 4, "maxLength": 90},
-    "status": {"enum": ["draft", "ready_to_lock", "locked"]},
-    "accountPhase": {"enum": ["warmup", "mature"]},
-    "contentOrigin": {"enum": ["original", "campaign"]},
-    "pillar": {"enum": ["ai_technology_work", "company_founder_strategy", "money_everyday_economics", "career_decision_frameworks"]},
-    "formatFamily": {"enum": ["big_idea_explainer", "data_brief", "strategy_breakdown", "money_mechanism", "career_framework", "rapid_context", "campaign_clip"]},
-    "voice": {"type": "string"},
-    "musicLane": {"enum": ["technology_change", "business_strategy", "money_people_decisions"]},
-    "campaign": {"oneOf": [{"type": "null"}, {"type": "object", "required": ["campaignId", "campaignTitle", "briefVerified", "rightsVerified"], "properties": {"campaignId": {"type": "string"}, "campaignTitle": {"type": "string"}, "briefVerified": {"type": "boolean"}, "rightsVerified": {"type": "boolean"}}}]},
-    "rights": {"type": "object", "required": ["musicLicensed", "visualsOriginal", "narrationOriginal", "factsVerified"], "properties": {"musicLicensed": {"type": "boolean"}, "visualsOriginal": {"type": "boolean"}, "narrationOriginal": {"type": "boolean"}, "factsVerified": {"type": "boolean"}}},
-    "sources": {"type": "array", "items": {"type": "object", "required": ["sourceId", "url", "publisher", "title", "accessedDate"], "properties": {"sourceId": {"type": "string", "pattern": "^SRC[0-9]{2,}$"}, "url": {"type": "string"}, "publisher": {"type": "string"}, "title": {"type": "string"}, "publishedDate": {"type": "string"}, "accessedDate": {"type": "string"}, "evidenceFile": {"type": "string"}}}},
-    "claims": {"type": "array", "items": {"type": "object", "required": ["claimId", "claim", "sourceId", "verified"], "properties": {"claimId": {"type": "string", "pattern": "^C[0-9]{2,}$"}, "claim": {"type": "string"}, "sourceId": {"type": "string"}, "verified": {"type": "boolean"}, "quote": {"type": "string"}}}},
-    "scenes": {"type": "array", "minItems": 4, "maxItems": 12, "items": {"type": "object", "required": ["id", "role", "type", "variant", "surface", "motion", "narration", "visual"], "properties": {
-      "id": {"type": "string", "pattern": "^S[0-9]{2,}$"},
-      "role": {"enum": ["hook", "context", "example", "correction", "evidence", "mechanism", "breakdown", "comparison", "decision", "outcome", "closing"]},
-      "type": {"enum": ["hook", "correction", "data_proof", "task_breakdown", "comparison", "outcome", "closing_brand"]},
-      "variant": {"type": "string"},
-      "surface": {"enum": ["dark", "light", "orange"]},
-      "motion": {"enum": ["measured_reveal", "sharp_correction", "left_to_right", "stacked_build", "subtraction", "restrained_lift"]},
-      "narration": {"type": "string", "minLength": 3, "maxLength": 260},
-      "claims": {"type": "array", "items": {"type": "string"}},
-      "visual": {"type": "object"}
-    }}},
-    "packaging": {"type": "object", "required": ["youtubeTitle", "instagramCaption", "tiktokCaption", "hashtags"], "properties": {"youtubeTitle": {"type": "string"}, "instagramCaption": {"type": "string"}, "tiktokCaption": {"type": "string"}, "hashtags": {"type": "array", "items": {"type": "string"}}}}
+    "schemaVersion": {
+      "enum": [
+        "1.0"
+      ]
+    },
+    "episodeId": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_-]{3,40}$"
+    },
+    "title": {
+      "type": "string",
+      "minLength": 4,
+      "maxLength": 90
+    },
+    "status": {
+      "enum": [
+        "draft",
+        "ready_to_lock",
+        "locked"
+      ]
+    },
+    "accountPhase": {
+      "enum": [
+        "warmup",
+        "mature"
+      ]
+    },
+    "contentOrigin": {
+      "enum": [
+        "original",
+        "campaign"
+      ]
+    },
+    "pillar": {
+      "enum": [
+        "ai_technology_work",
+        "company_founder_strategy",
+        "money_everyday_economics",
+        "career_decision_frameworks"
+      ]
+    },
+    "formatFamily": {
+      "enum": [
+        "big_idea_explainer",
+        "data_brief",
+        "strategy_breakdown",
+        "money_mechanism",
+        "career_framework",
+        "rapid_context",
+        "campaign_clip"
+      ]
+    },
+    "voice": {
+      "type": "string"
+    },
+    "musicLane": {
+      "enum": [
+        "technology_change",
+        "business_strategy",
+        "money_people_decisions"
+      ]
+    },
+    "campaign": {
+      "oneOf": [
+        {
+          "type": "null"
+        },
+        {
+          "type": "object",
+          "required": [
+            "campaignId",
+            "campaignTitle",
+            "briefVerified",
+            "rightsVerified"
+          ],
+          "properties": {
+            "campaignId": {
+              "type": "string"
+            },
+            "campaignTitle": {
+              "type": "string"
+            },
+            "briefVerified": {
+              "type": "boolean"
+            },
+            "rightsVerified": {
+              "type": "boolean"
+            }
+          }
+        }
+      ]
+    },
+    "rights": {
+      "type": "object",
+      "required": [
+        "musicLicensed",
+        "visualsOriginal",
+        "narrationOriginal",
+        "factsVerified"
+      ],
+      "properties": {
+        "musicLicensed": {
+          "type": "boolean"
+        },
+        "visualsOriginal": {
+          "type": "boolean"
+        },
+        "narrationOriginal": {
+          "type": "boolean"
+        },
+        "factsVerified": {
+          "type": "boolean"
+        }
+      }
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "sourceId",
+          "url",
+          "publisher",
+          "title",
+          "accessedDate"
+        ],
+        "properties": {
+          "sourceId": {
+            "type": "string",
+            "pattern": "^SRC[0-9]{2,}$"
+          },
+          "url": {
+            "type": "string"
+          },
+          "publisher": {
+            "type": "string"
+          },
+          "title": {
+            "type": "string"
+          },
+          "publishedDate": {
+            "type": "string"
+          },
+          "accessedDate": {
+            "type": "string"
+          },
+          "evidenceFile": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "claims": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "claimId",
+          "claim",
+          "sourceId",
+          "verified"
+        ],
+        "properties": {
+          "claimId": {
+            "type": "string",
+            "pattern": "^C[0-9]{2,}$"
+          },
+          "claim": {
+            "type": "string"
+          },
+          "sourceId": {
+            "type": "string"
+          },
+          "verified": {
+            "type": "boolean"
+          },
+          "quote": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "scenes": {
+      "type": "array",
+      "minItems": 4,
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "required": [
+          "id",
+          "role",
+          "type",
+          "variant",
+          "surface",
+          "motion",
+          "narration",
+          "visual"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^S[0-9]{2,}$"
+          },
+          "role": {
+            "enum": [
+              "hook",
+              "context",
+              "example",
+              "correction",
+              "evidence",
+              "mechanism",
+              "breakdown",
+              "comparison",
+              "decision",
+              "outcome",
+              "closing"
+            ]
+          },
+          "type": {
+            "enum": [
+              "hook",
+              "correction",
+              "data_proof",
+              "task_breakdown",
+              "comparison",
+              "outcome",
+              "closing_brand"
+            ]
+          },
+          "variant": {
+            "type": "string"
+          },
+          "surface": {
+            "enum": [
+              "dark",
+              "light",
+              "orange"
+            ]
+          },
+          "motion": {
+            "enum": [
+              "measured_reveal",
+              "sharp_correction",
+              "left_to_right",
+              "stacked_build",
+              "subtraction",
+              "restrained_lift"
+            ]
+          },
+          "narration": {
+            "type": "string",
+            "minLength": 3,
+            "maxLength": 260
+          },
+          "claims": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            }
+          },
+          "visual": {
+            "type": "object"
+          },
+          "visualSystem": {
+            "type": "object",
+            "additionalProperties": false,
+            "properties": {
+              "lane": {
+                "enum": [
+                  "editorial_collage",
+                  "evidence_desk",
+                  "diagram_world",
+                  "object_metaphor",
+                  "interface_reality",
+                  "cinematic_context",
+                  "data_theatre",
+                  "editorial_type"
+                ]
+              },
+              "density": {
+                "enum": [
+                  "quiet",
+                  "editorial",
+                  "dense"
+                ]
+              },
+              "seed": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 80
+              },
+              "material": {
+                "enum": [
+                  "paper",
+                  "scan",
+                  "grid",
+                  "grain",
+                  "halftone"
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    "packaging": {
+      "type": "object",
+      "required": [
+        "youtubeTitle",
+        "instagramCaption",
+        "tiktokCaption",
+        "hashtags"
+      ],
+      "properties": {
+        "youtubeTitle": {
+          "type": "string"
+        },
+        "instagramCaption": {
+          "type": "string"
+        },
+        "tiktokCaption": {
+          "type": "string"
+        },
+        "hashtags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    }
   }
 }

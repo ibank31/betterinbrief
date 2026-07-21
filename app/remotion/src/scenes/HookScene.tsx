@@ -11,7 +11,7 @@ export type HookSceneProps = SceneBaseProps & {
   highlightedIndex?: number;
 };
 
-export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statisticSuffix, headline, subtitle, highlightedIndex = 0}) => {
+export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statisticSuffix, headline, subtitle, highlightedIndex = 0, world, surface}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const hit = spring({frame, fps, config: motion.spring.tight});
@@ -24,7 +24,7 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
   const displayStatistic = statMatch
     ? `${Math.round(parseInt(statMatch[1], 10) * countEased)}${statMatch[2]}`
     : statistic;
-  return <EditorialFrame background={colors.black} color={colors.white}>
+  return <EditorialFrame background={colors.black} color={colors.white} world={world} surface={surface}>
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 820}}>
       <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
       <div style={{display: "flex", alignItems: "baseline", marginTop: 64, transform: `translateY(${(1-hit)*42}px)`, opacity: hit}}>

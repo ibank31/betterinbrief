@@ -6,9 +6,9 @@ import {EditorialFrame, EditorialSubtitle, Eyebrow, SceneBaseProps, clamp} from 
 export type TaskItem = {label:string; shifts:boolean};
 export type TaskBreakdownSceneProps = SceneBaseProps & {eyebrow:string; headline:string; jobTitle:string; tasks:TaskItem[]};
 
-export const TaskBreakdownScene:React.FC<TaskBreakdownSceneProps>=({eyebrow,headline,jobTitle,tasks,subtitle})=>{
+export const TaskBreakdownScene:React.FC<TaskBreakdownSceneProps>=({eyebrow,headline,jobTitle,tasks,subtitle,world,surface})=>{
  const frame=useCurrentFrame();
- return <EditorialFrame background={colors.graphite} color={colors.white}>
+ return <EditorialFrame background={colors.graphite} color={colors.white} world={world} surface={surface}>
   <div style={{position:"absolute",left:safeZones.left,top:safeZones.top,width:880}}>
    <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
    <div style={{marginTop:52,maxWidth:800,fontSize:typography.size.headline,lineHeight:typography.lineHeight.headline,fontWeight:typography.weight.black,letterSpacing:typography.letterSpacing.headline}}>{headline}</div>

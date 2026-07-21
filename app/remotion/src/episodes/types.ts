@@ -46,6 +46,31 @@ export type SceneSurface =
   | "light"
   | "orange";
 
+/**
+ * A visual lane is a reusable storytelling language, not a fixed scene
+ * template. New episodes may choose a lane explicitly; old episodes receive
+ * a safe type-based default at render time.
+ */
+export type VisualLane =
+  | "editorial_collage"
+  | "evidence_desk"
+  | "diagram_world"
+  | "object_metaphor"
+  | "interface_reality"
+  | "cinematic_context"
+  | "data_theatre"
+  | "editorial_type";
+
+export type VisualDensity = "quiet" | "editorial" | "dense";
+
+export type VisualWorldSpec = {
+  lane: VisualLane;
+  density: VisualDensity;
+  /** Stable per-scene seed prevents repeated procedural compositions. */
+  seed: string;
+  material: "paper" | "scan" | "grid" | "grain" | "halftone";
+};
+
 export type SceneMotion =
   | "measured_reveal"
   | "sharp_correction"
@@ -186,6 +211,8 @@ type EpisodeSceneBase<
   variant: TVariant;
   surface: SceneSurface;
   motion: SceneMotion;
+  /** Optional authoring override. Absent values are resolved by the system. */
+  visualSystem?: Partial<VisualWorldSpec>;
   narration: string;
   audio: string;
   timing: SceneTiming;

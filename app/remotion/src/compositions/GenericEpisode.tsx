@@ -24,6 +24,7 @@ import {TaskBreakdownScene} from "../scenes/TaskBreakdownScene";
 import {
   VariantSceneFrame,
 } from "../episodes/VariantSceneFrame";
+import {defaultVisualWorld} from "../visual/VisualWorld";
 
 const COLD_OPEN_SKIP_FRAMES = 14;
 
@@ -84,17 +85,24 @@ const LivingDrift: React.FC<React.PropsWithChildren<{
 const EpisodeScene: React.FC<{
   scene: EpisodeRenderScene;
 }> = ({scene}) => {
+  const world = {
+    ...defaultVisualWorld(scene.id, scene.surface, scene.type),
+    ...scene.visualSystem,
+    seed: scene.visualSystem?.seed ?? scene.id,
+  };
   switch (scene.type) {
     case "hook":
-      return <HookScene {...scene.visual} />;
+      return <HookScene {...scene.visual} world={world} surface={scene.surface} />;
 
     case "correction":
-      return <CorrectionScene {...scene.visual} />;
+      return <CorrectionScene {...scene.visual} world={world} surface={scene.surface} />;
 
     case "data_proof":
       return (
         <DataProofScene
           {...scene.visual}
+          world={world}
+          surface={scene.surface}
           source={
             scene.variant === "comparison"
               ? ""
@@ -105,18 +113,20 @@ const EpisodeScene: React.FC<{
 
     case "task_breakdown":
       return (
-        <TaskBreakdownScene {...scene.visual} />
+        <TaskBreakdownScene {...scene.visual} world={world} surface={scene.surface} />
       );
 
     case "comparison":
       return (
-        <ComparisonScene {...scene.visual} />
+        <ComparisonScene {...scene.visual} world={world} surface={scene.surface} />
       );
 
     case "outcome":
       return (
         <OutcomeScene
           {...scene.visual}
+          world={world}
+          surface={scene.surface}
           question={
             scene.variant === "framework"
               ? ""
@@ -127,7 +137,7 @@ const EpisodeScene: React.FC<{
 
     case "closing_brand":
       return (
-        <ClosingBrandScene {...scene.visual} />
+        <ClosingBrandScene {...scene.visual} world={world} surface={scene.surface} />
       );
 
     default: {

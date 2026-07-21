@@ -10,34 +10,158 @@
   "voice": "af_sarah",
   "musicLane": "money_people_decisions",
   "campaign": null,
-  "rights": {"musicLicensed": true, "visualsOriginal": true, "narrationOriginal": true, "factsVerified": true},
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
   "sources": [
-    {"sourceId": "SRC01", "url": "https://example.org/budget-study", "publisher": "Example Research Institute", "title": "Household budgeting behaviour study", "publishedDate": "2025-11-02", "accessedDate": "2026-07-20", "evidenceFile": "sources/budget-study.pdf"}
+    {
+      "sourceId": "SRC01",
+      "url": "https://example.org/budget-study",
+      "publisher": "Example Research Institute",
+      "title": "Household budgeting behaviour study",
+      "publishedDate": "2025-11-02",
+      "accessedDate": "2026-07-20",
+      "evidenceFile": "sources/budget-study.pdf"
+    }
   ],
   "claims": [
-    {"claimId": "C01", "claim": "A majority of new budgets are abandoned within the first week.", "sourceId": "SRC01", "verified": true, "quote": "Most participants stopped tracking within seven days."}
+    {
+      "claimId": "C01",
+      "claim": "A majority of new budgets are abandoned within the first week.",
+      "sourceId": "SRC01",
+      "verified": true,
+      "quote": "Most participants stopped tracking within seven days."
+    }
   ],
   "scenes": [
-    {"id": "S01", "role": "hook", "type": "hook", "variant": "statistic", "surface": "dark", "motion": "measured_reveal",
-     "narration": "Most new budgets do not survive the first week.", "claims": ["C01"],
-     "visual": {"eyebrow": "MONEY \u00b7 HABITS", "statistic": "7", "statisticSuffix": "DAYS", "headline": "is how long most budgets last", "highlightedIndex": 1}},
-    {"id": "S02", "role": "correction", "type": "correction", "variant": "equation", "surface": "light", "motion": "sharp_correction",
-     "narration": "The problem is not discipline. It is design.",
-     "visual": {"eyebrow": "THE COMMON MISTAKE", "misconception": "DISCIPLINE", "correction": "DESIGN", "symbol": "\u2260", "subtitle": "Budgets fail by design, not willpower."}},
-    {"id": "S03", "role": "evidence", "type": "data_proof", "variant": "single_value", "surface": "dark", "motion": "measured_reveal",
-     "narration": "In one study most participants stopped tracking within seven days.", "claims": ["C01"],
-     "visual": {"eyebrow": "WHAT THE DATA SAYS", "value": 7, "decimals": 0, "suffix": "", "label": "days before most budgets are abandoned", "source": "SOURCE \u00b7 EXAMPLE RESEARCH INSTITUTE", "subtitle": "Tracking stops long before payday."}},
-    {"id": "S04", "role": "outcome", "type": "outcome", "variant": "statement", "surface": "orange", "motion": "restrained_lift",
-     "narration": "Design the budget around your habits, not against them.",
-     "visual": {"eyebrow": "THE BETTER APPROACH", "setup": "Willpower runs out. Systems do not.", "outcome": "SYSTEMS", "comparison": "> WILLPOWER", "question": "DOES YOUR BUDGET FIT YOUR WEEK?", "subtitle": "Build the system around real behaviour."}},
-    {"id": "S05", "role": "closing", "type": "closing_brand", "variant": "standard", "surface": "light", "motion": "restrained_lift",
-     "narration": "Big ideas. Briefly.",
-     "visual": {"tagline": "Big ideas. Briefly.", "closingLine": "Design beats discipline."}}
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "statistic",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "Most new budgets do not survive the first week.",
+      "claims": [
+        "C01"
+      ],
+      "visual": {
+        "eyebrow": "MONEY \u00b7 HABITS",
+        "statistic": "7",
+        "statisticSuffix": "DAYS",
+        "headline": "is how long most budgets last",
+        "highlightedIndex": 1
+      },
+      "visualSystem": {
+        "lane": "object_metaphor",
+        "density": "quiet",
+        "seed": "Example_001-S01",
+        "material": "grain"
+      }
+    },
+    {
+      "id": "S02",
+      "role": "correction",
+      "type": "correction",
+      "variant": "equation",
+      "surface": "light",
+      "motion": "sharp_correction",
+      "narration": "The problem is not discipline. It is design.",
+      "visual": {
+        "eyebrow": "THE COMMON MISTAKE",
+        "misconception": "DISCIPLINE",
+        "correction": "DESIGN",
+        "symbol": "\u2260",
+        "subtitle": "Budgets fail by design, not willpower."
+      },
+      "visualSystem": {
+        "lane": "editorial_collage",
+        "density": "editorial",
+        "seed": "Example_001-S02",
+        "material": "paper"
+      }
+    },
+    {
+      "id": "S03",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "In one study most participants stopped tracking within seven days.",
+      "claims": [
+        "C01"
+      ],
+      "visual": {
+        "eyebrow": "WHAT THE DATA SAYS",
+        "value": 7,
+        "decimals": 0,
+        "suffix": "",
+        "label": "days before most budgets are abandoned",
+        "source": "SOURCE \u00b7 EXAMPLE RESEARCH INSTITUTE",
+        "subtitle": "Tracking stops long before payday."
+      },
+      "visualSystem": {
+        "lane": "evidence_desk",
+        "density": "editorial",
+        "seed": "Example_001-S03",
+        "material": "scan"
+      }
+    },
+    {
+      "id": "S04",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "statement",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "Design the budget around your habits, not against them.",
+      "visual": {
+        "eyebrow": "THE BETTER APPROACH",
+        "setup": "Willpower runs out. Systems do not.",
+        "outcome": "SYSTEMS",
+        "comparison": "> WILLPOWER",
+        "question": "DOES YOUR BUDGET FIT YOUR WEEK?",
+        "subtitle": "Build the system around real behaviour."
+      },
+      "visualSystem": {
+        "lane": "editorial_type",
+        "density": "quiet",
+        "seed": "Example_001-S04",
+        "material": "paper"
+      }
+    },
+    {
+      "id": "S05",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Design beats discipline."
+      },
+      "visualSystem": {
+        "lane": "editorial_type",
+        "density": "quiet",
+        "seed": "Example_001-S05",
+        "material": "paper"
+      }
+    }
   ],
   "packaging": {
     "youtubeTitle": "Most Budgets Fail In The First Week",
     "instagramCaption": "Most budgets fail in week one. The fix is design, not discipline. #money #habits",
     "tiktokCaption": "Your budget is not broken. Its design is. #money #budgeting",
-    "hashtags": ["money", "budgeting", "habits"]
+    "hashtags": [
+      "money",
+      "budgeting",
+      "habits"
+    ]
   }
 }

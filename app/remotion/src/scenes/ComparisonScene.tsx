@@ -17,7 +17,7 @@ export type ComparisonSceneProps = SceneBaseProps & {
 const fitFont = (text: string, maxSize: number, width: number): number =>
   Math.min(maxSize, Math.floor(width / (Math.max(1, text.length) * 0.62)));
 
-export const ComparisonScene: React.FC<ComparisonSceneProps> = ({eyebrow, leftLabel, leftValue, rightLabel, rightValue, verdict}) => {
+export const ComparisonScene: React.FC<ComparisonSceneProps> = ({eyebrow, leftLabel, leftValue, rightLabel, rightValue, verdict, world, surface}) => {
   const frame = useCurrentFrame();
   const {fps} = useVideoConfig();
   const leftIn = spring({frame: frame - 2, fps, config: motion.spring.editorial});
@@ -27,7 +27,7 @@ export const ComparisonScene: React.FC<ComparisonSceneProps> = ({eyebrow, leftLa
   const leftSize = fitFont(leftValue, 92, 380);
   const rightSize = fitFont(rightValue, 128, 460);
   return (
-    <EditorialFrame background={colors.white}>
+    <EditorialFrame background={colors.white} world={world} surface={surface}>
       <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 880}}>
         <Eyebrow>{eyebrow}</Eyebrow>
       </div>

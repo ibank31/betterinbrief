@@ -1,9 +1,13 @@
 import React from "react";
 import {AbsoluteFill, interpolate, useCurrentFrame} from "remotion";
 import {colors, safeZones, subtitle, texture, typography} from "../brand/tokens";
+import type {SceneSurface, VisualWorldSpec} from "../episodes/types";
+import {EditorialWorld, defaultVisualWorld} from "../visual/VisualWorld";
 
 export type SceneBaseProps = {
   subtitle?: string;
+  world?: VisualWorldSpec;
+  surface?: SceneSurface;
 };
 
 export const clamp = {
@@ -15,12 +19,17 @@ export const EditorialFrame: React.FC<React.PropsWithChildren<{
   background?: string;
   color?: string;
   textureOn?: boolean;
-}>> = ({background = colors.white, color = colors.black, textureOn = true, children}) => (
-  <AbsoluteFill style={{backgroundColor: background, color, fontFamily: typography.family, overflow: "hidden"}}>
+  world?: VisualWorldSpec;
+  surface?: SceneSurface;
+}>> = ({background = colors.white, color = colors.black, textureOn = true, world, surface, children}) => {
+  const resolvedSurface = surface ?? (background === colors.orange ? "orange" : background === colors.black || background === colors.graphite ? "dark" : "light");
+  const resolvedWorld = world ?? defaultVisualWorld("fallback", resolvedSurface, "editorial_collage");
+  return <AbsoluteFill style={{backgroundColor: background, color, fontFamily: typography.family, overflow: "hidden"}}>
+    <EditorialWorld surface={resolvedSurface} world={resolvedWorld} />
     {textureOn ? <AbsoluteFill style={{opacity: texture.noiseOpacityMinimum, backgroundImage: "repeating-linear-gradient(0deg, transparent 0px, transparent 3px, currentColor 4px)", pointerEvents: "none"}} /> : null}
     {children}
-  </AbsoluteFill>
-);
+  </AbsoluteFill>;
+};
 
 // Subtitle bawah DIMATIKAN: narasi kini hanya tampil lewat kinetic captions
 // (CaptionOverlay). Dua lapis teks di area yang sama membuat tampilan

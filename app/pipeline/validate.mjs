@@ -21,6 +21,14 @@ const VISUAL_REQUIRED = {
   closing_brand: ["tagline"],
 };
 
+const VISUAL_LANES = [
+  "editorial_collage", "evidence_desk", "diagram_world",
+  "object_metaphor", "interface_reality", "cinematic_context",
+  "data_theatre", "editorial_type",
+];
+const VISUAL_DENSITIES = ["quiet", "editorial", "dense"];
+const VISUAL_MATERIALS = ["paper", "scan", "grid", "grain", "halftone"];
+
 function checkEnum(errors, schema, obj, key, where) {
   const spec = schema.properties[key];
   if (spec && spec.enum && !spec.enum.includes(obj[key])) {
@@ -127,6 +135,28 @@ export function validateEpisode(episode) {
     checkLen("subtitle", limits.text.subtitleMax);
     checkLen("label", limits.text.labelMax);
     checkLen("statistic", limits.text.statisticMax);
+    // Visual Operating System v2. This is optional for legacy episodes: the
+    // renderer resolves a scene-type default. When authors opt in, validate
+    // the instruction early so every future render is deterministic.
+    if (s.visualSystem !== undefined) {
+      if (!s.visualSystem || typeof s.visualSystem !== "object" || Array.isArray(s.visualSystem)) {
+        errors.push(`${where}: visualSystem harus object`);
+      } else {
+        const vs = s.visualSystem;
+        if (vs.lane !== undefined && !VISUAL_LANES.includes(vs.lane)) {
+          errors.push(`${where}: visualSystem.lane tidak dikenal`);
+        }
+        if (vs.density !== undefined && !VISUAL_DENSITIES.includes(vs.density)) {
+          errors.push(`${where}: visualSystem.density tidak dikenal`);
+        }
+        if (vs.material !== undefined && !VISUAL_MATERIALS.includes(vs.material)) {
+          errors.push(`${where}: visualSystem.material tidak dikenal`);
+        }
+        if (vs.seed !== undefined && (typeof vs.seed !== "string" || !vs.seed.trim())) {
+          errors.push(`${where}: visualSystem.seed harus string tidak kosong`);
+        }
+      }
+    }
     // fact-bearing scenes must reference verified claims
     if ((s.type === "data_proof" || s.role === "evidence")) {
       if (!Array.isArray(s.claims) || s.claims.length === 0) {

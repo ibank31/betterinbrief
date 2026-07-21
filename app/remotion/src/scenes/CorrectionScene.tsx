@@ -10,11 +10,11 @@ export type CorrectionSceneProps = SceneBaseProps & {
   symbol?: string;
 };
 
-export const CorrectionScene: React.FC<CorrectionSceneProps> = ({eyebrow, misconception, correction, symbol = "≠", subtitle}) => {
+export const CorrectionScene: React.FC<CorrectionSceneProps> = ({eyebrow, misconception, correction, symbol = "≠", subtitle, world, surface}) => {
   const frame = useCurrentFrame();
   const cut = interpolate(frame, [4, motion.standard], [0, 1], clamp);
   const answer = interpolate(frame, [16, 30], [0, 1], clamp);
-  return <EditorialFrame background={colors.warmWhite}>
+  return <EditorialFrame background={colors.warmWhite} world={world} surface={surface}>
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 880}}>
       <Eyebrow>{eyebrow}</Eyebrow>
       <div style={{marginTop: 94, width: 640, fontSize: typography.size.display, lineHeight: typography.lineHeight.display, letterSpacing: typography.letterSpacing.display, fontWeight: typography.weight.black, color: colors.gray700, textDecoration: "line-through", textDecorationColor: colors.orange, textDecorationThickness: 14, opacity: .92}}>{misconception}</div>
