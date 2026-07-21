@@ -2,6 +2,7 @@ import React from "react";
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from "remotion";
 import {colors, motion, safeZones, typography} from "../brand/tokens";
 import {EditorialFrame, EditorialSubtitle, Eyebrow, SceneBaseProps, clamp} from "./shared";
+import {NarrativeDevice} from "../visual/NarrativeDevice";
 
 export type HookSceneProps = SceneBaseProps & {
   eyebrow: string;
@@ -25,6 +26,7 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
     ? `${Math.round(parseInt(statMatch[1], 10) * countEased)}${statMatch[2]}`
     : statistic;
   return <EditorialFrame background={colors.black} color={colors.white} world={world} surface={surface}>
+    <NarrativeDevice kind={world?.device ?? "two_tracks"} surface={surface ?? "dark"} />
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 820}}>
       <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
       <div style={{display: "flex", alignItems: "baseline", marginTop: 64, transform: `translateY(${(1-hit)*42}px)`, opacity: hit}}>
@@ -33,7 +35,7 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
       </div>
       <div style={{marginTop: 74, maxWidth: 790, fontSize: typography.size.headline, lineHeight: typography.lineHeight.headline, fontWeight: typography.weight.black, letterSpacing: typography.letterSpacing.headline, opacity: headlineIn, transform: `translateX(${(1-headlineIn)*-36}px)`}}>{headline}</div>
     </div>
-    <div style={{position: "absolute", left: 600, top: 760, display: "flex", gap: 24}}>
+    <div style={{position: "absolute", left: 560, top: 800, display: "flex", gap: 24}}>
       {[0,1,2,3].map((i) => {
         const on = i === highlightedIndex;
         const workerColor = on ? colors.orange : colors.gray700;

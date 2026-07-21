@@ -322,6 +322,15 @@
                   "grain",
                   "halftone"
                 ]
+              },
+              "device": {
+                "enum": [
+                  "two_tracks",
+                  "evidence_scan",
+                  "decision_graph",
+                  "task_system",
+                  "priority_signal"
+                ]
               }
             }
           }

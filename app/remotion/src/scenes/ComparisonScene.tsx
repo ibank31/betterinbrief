@@ -2,6 +2,7 @@ import React from "react";
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from "remotion";
 import {colors, motion, safeZones, typography} from "../brand/tokens";
 import {EditorialFrame, Eyebrow, SceneBaseProps, clamp} from "./shared";
+import {NarrativeDevice} from "../visual/NarrativeDevice";
 
 export type ComparisonSceneProps = SceneBaseProps & {
   eyebrow: string;
@@ -28,6 +29,7 @@ export const ComparisonScene: React.FC<ComparisonSceneProps> = ({eyebrow, leftLa
   const rightSize = fitFont(rightValue, 128, 460);
   return (
     <EditorialFrame background={colors.white} world={world} surface={surface}>
+      <NarrativeDevice kind={world?.device ?? "decision_graph"} surface={surface ?? "light"} />
       <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 880}}>
         <Eyebrow>{eyebrow}</Eyebrow>
       </div>

@@ -2,6 +2,7 @@ import React from "react";
 import {interpolate, useCurrentFrame} from "remotion";
 import {colors, safeZones, typography} from "../brand/tokens";
 import {EditorialFrame, EditorialSubtitle, Eyebrow, SceneBaseProps, clamp} from "./shared";
+import {NarrativeDevice} from "../visual/NarrativeDevice";
 
 export type TaskItem = {label:string; shifts:boolean};
 export type TaskBreakdownSceneProps = SceneBaseProps & {eyebrow:string; headline:string; jobTitle:string; tasks:TaskItem[]};
@@ -9,6 +10,7 @@ export type TaskBreakdownSceneProps = SceneBaseProps & {eyebrow:string; headline
 export const TaskBreakdownScene:React.FC<TaskBreakdownSceneProps>=({eyebrow,headline,jobTitle,tasks,subtitle,world,surface})=>{
  const frame=useCurrentFrame();
  return <EditorialFrame background={colors.graphite} color={colors.white} world={world} surface={surface}>
+  <NarrativeDevice kind={world?.device ?? "task_system"} surface={surface ?? "dark"} />
   <div style={{position:"absolute",left:safeZones.left,top:safeZones.top,width:880}}>
    <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
    <div style={{marginTop:52,maxWidth:800,fontSize:typography.size.headline,lineHeight:typography.lineHeight.headline,fontWeight:typography.weight.black,letterSpacing:typography.letterSpacing.headline}}>{headline}</div>

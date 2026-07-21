@@ -2,6 +2,7 @@ import React from "react";
 import {interpolate, useCurrentFrame} from "remotion";
 import {colors, motion, safeZones, typography} from "../brand/tokens";
 import {EditorialFrame, EditorialSubtitle, Eyebrow, SceneBaseProps, SourceLine, clamp} from "./shared";
+import {NarrativeDevice} from "../visual/NarrativeDevice";
 
 export type DataProofSceneProps = SceneBaseProps & {
   eyebrow: string;
@@ -17,6 +18,7 @@ export const DataProofScene: React.FC<DataProofSceneProps> = ({eyebrow, value, d
   const progress = interpolate(frame, [6, motion.emphasis], [0, 1], clamp);
   const shown = (value * progress).toFixed(decimals);
   return <EditorialFrame background={colors.black} color={colors.white} world={world} surface={surface}>
+    <NarrativeDevice kind={world?.device ?? "evidence_scan"} surface={surface ?? "dark"} />
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 880}}>
       <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
       <div style={{marginTop: 114, fontSize: 280, lineHeight: .78, fontWeight: typography.weight.black, letterSpacing: -14, color: colors.white}}>{shown}<span style={{fontSize: 110, color: colors.orange, marginLeft: 14}}>{suffix}</span></div>

@@ -28,6 +28,7 @@ const VISUAL_LANES = [
 ];
 const VISUAL_DENSITIES = ["quiet", "editorial", "dense"];
 const VISUAL_MATERIALS = ["paper", "scan", "grid", "grain", "halftone"];
+const NARRATIVE_DEVICES = ["two_tracks", "evidence_scan", "decision_graph", "task_system", "priority_signal"];
 
 function checkEnum(errors, schema, obj, key, where) {
   const spec = schema.properties[key];
@@ -151,6 +152,9 @@ export function validateEpisode(episode) {
         }
         if (vs.material !== undefined && !VISUAL_MATERIALS.includes(vs.material)) {
           errors.push(`${where}: visualSystem.material tidak dikenal`);
+        }
+        if (vs.device !== undefined && !NARRATIVE_DEVICES.includes(vs.device)) {
+          errors.push(`${where}: visualSystem.device tidak dikenal`);
         }
         if (vs.seed !== undefined && (typeof vs.seed !== "string" || !vs.seed.trim())) {
           errors.push(`${where}: visualSystem.seed harus string tidak kosong`);

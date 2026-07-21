@@ -63,12 +63,22 @@ export type VisualLane =
 
 export type VisualDensity = "quiet" | "editorial" | "dense";
 
+/** A concrete visual metaphor selected for an individual argument. */
+export type NarrativeDeviceKind =
+  | "two_tracks"
+  | "evidence_scan"
+  | "decision_graph"
+  | "task_system"
+  | "priority_signal";
+
 export type VisualWorldSpec = {
   lane: VisualLane;
   density: VisualDensity;
   /** Stable per-scene seed prevents repeated procedural compositions. */
   seed: string;
   material: "paper" | "scan" | "grid" | "grain" | "halftone";
+  /** Optional scene-level metaphor. Components provide a safe type default. */
+  device?: NarrativeDeviceKind;
 };
 
 export type SceneMotion =

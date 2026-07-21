@@ -2,6 +2,7 @@ import React from "react";
 import {interpolate, useCurrentFrame} from "remotion";
 import {colors, motion, safeZones, typography} from "../brand/tokens";
 import {EditorialFrame, EditorialSubtitle, Eyebrow, SceneBaseProps, clamp} from "./shared";
+import {NarrativeDevice} from "../visual/NarrativeDevice";
 
 export type OutcomeSceneProps=SceneBaseProps&{eyebrow:string;setup:string;outcome:string;comparison:string;question:string};
 export const OutcomeScene:React.FC<OutcomeSceneProps>=({eyebrow,setup,outcome,comparison,question,subtitle,world,surface})=>{
@@ -9,6 +10,7 @@ export const OutcomeScene:React.FC<OutcomeSceneProps>=({eyebrow,setup,outcome,co
  const reveal=interpolate(frame,[6,motion.emphasis],[0,1],clamp);
  const q=interpolate(frame,[24,38],[0,1],clamp);
  return <EditorialFrame background={colors.orange} color={colors.black} world={world} surface={surface}>
+  <NarrativeDevice kind={world?.device ?? "priority_signal"} surface={surface ?? "orange"} />
   <div style={{position:"absolute",left:safeZones.left,top:safeZones.top,width:880}}>
    <Eyebrow color={colors.black72}>{eyebrow}</Eyebrow>
    <div style={{marginTop:70,maxWidth:760,fontSize:typography.size.title,lineHeight:typography.lineHeight.title,fontWeight:typography.weight.semibold}}>{setup}</div>
