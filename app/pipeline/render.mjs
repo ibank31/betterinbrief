@@ -1,6 +1,6 @@
 import fs from "node:fs";
 import path from "node:path";
-import {P, SYSTEM_DIR, readJson, sha256File, writeJson, runOk, ffprobeJson, log} from "../cli/lib/util.mjs";
+import {P, SYSTEM_DIR, loadConfig, readJson, sha256File, writeJson, runOk, ffprobeJson, log} from "../cli/lib/util.mjs";
 
 const CHROMIUM = process.env.BINB_CHROMIUM || "/usr/bin/chromium";
 // Ten seconds at BinB's current 30fps. Short enough to resume after a tab crash,
@@ -89,7 +89,7 @@ function renderChunk({id, propsPath, chunkPath, start, end}) {
   }
 }
 
-function concatChunks(chunkPaths, outputPath) {
+function concatChunks(chunkPaths, outputPath, fps) {
   const listPath = `${outputPath}.concat.txt`;
   const tempOutput = `${outputPath}.partial.mp4`;
   const quote = (file) => file.replace(/'/g, "'\\''");
@@ -99,7 +99,15 @@ function concatChunks(chunkPaths, outputPath) {
     runOk("ffmpeg", [
       "-y", "-v", "error",
       "-f", "concat", "-safe", "0", "-i", listPath,
-      "-c", "copy", "-movflags", "+faststart", tempOutput,
+      // Each independent MP4 chunk carries a small audio/container timestamp
+      // offset. Stream-copy concatenation preserves those offsets and makes a
+      // 30fps sequence appear as ~29.86fps to ffprobe. Rebuild video PTS from
+      // its frame index here; this is cheap compared with Remotion rendering
+      // and preserves the exact expected number of visual frames.
+      "-map", "0:v:0", "-map", "0:a:0",
+      "-vf", `setpts=N/(${fps}*TB)`, "-r", String(fps),
+      "-c:v", "libx264", "-crf", "14", "-pix_fmt", "yuv420p",
+      "-c:a", "copy", "-movflags", "+faststart", tempOutput,
     ]);
     if (!isUsableChunk(tempOutput)) throw new Error("hasil gabungan chunk tidak valid");
     fs.renameSync(tempOutput, outputPath);
@@ -116,6 +124,7 @@ export function renderEpisode(id) {
   const props = readJson(propsPath);
   const propsSha256 = sha256File(propsPath);
   const frameCount = totalFrames(props);
+  const fps = loadConfig("brand").canvas.fps;
   const plan = chunkPlan(frameCount);
 
   copySceneAudio(id, props, workDir);
@@ -161,7 +170,7 @@ export function renderEpisode(id) {
 
   const chunkPaths = plan.map((chunk) => path.join(chunkDir, chunk.file));
   log(`render: menggabungkan ${chunkPaths.length} chunk menjadi mezzanine.mp4`);
-  concatChunks(chunkPaths, mezzanine);
+  concatChunks(chunkPaths, mezzanine, fps);
 
   const manifest = {
     episodeId: props.episodeId,
