@@ -1,14 +1,14 @@
 /**
- * Explicit font loading. Fonts MUST exist in public/fonts.
- * There is intentionally no silent fallback: a missing font fails the render.
+ * Start loading bundled Inter faces without blocking Remotion's root.
  *
- * Hardened for low-power devices (proot/Android): Chromium can restart the
- * tab mid-render under memory pressure, re-running this module while the
- * device is busy. Loading therefore retries per face and uses a generous
- * explicit delayRender timeout instead of failing the whole render on one
- * slow load.
+ * On Android/PRoot, Chromium can restart a renderer tab late in a long render.
+ * A module-level delayRender then waits for a new FontFace request that may never
+ * settle, turning a recoverable tab restart into a 5–10 minute timeout. Local
+ * fonts normally resolve before the first frame; if a restarted tab is slow,
+ * Chromium can safely use the declared fallback for that frame instead of
+ * stalling the entire episode.
  */
-import {continueRender, delayRender, staticFile} from "remotion";
+import {staticFile} from "remotion";
 
 const faces: ReadonlyArray<[string, string, string]> = [
   ["Inter", "Inter-Regular.ttf", "400"],
@@ -17,36 +17,15 @@ const faces: ReadonlyArray<[string, string, string]> = [
   ["Inter", "Inter-Black.ttf", "900"],
 ];
 
-const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-
-const loadFace = async (family: string, file: string, weight: string) => {
-  let lastError: unknown = null;
-  for (let attempt = 1; attempt <= 4; attempt++) {
-    try {
-      const face = new FontFace(family, `url(${staticFile(`fonts/${file}`)})`, {
-        weight,
-      });
+if (typeof document !== "undefined" && "fonts" in document) {
+  void Promise.all(
+    faces.map(async ([family, file, weight]) => {
+      const face = new FontFace(family, `url(${staticFile(`fonts/${file}`)})`, {weight});
       await face.load();
       document.fonts.add(face);
-      return;
-    } catch (error) {
-      lastError = error;
-      await sleep(attempt * 2000);
-    }
-  }
-  throw new Error(
-    `BinB font loading failed for ${file}. Run installer step 04 to bundle Inter. ${String(lastError)}`,
-  );
-};
-
-if (typeof document !== "undefined") {
-  const handle = delayRender("Loading bundled Inter fonts", {
-    timeoutInMilliseconds: 600000,
-    retries: 2,
+    }),
+  ).catch((error: unknown) => {
+    // Never block a long production render on a recoverable renderer-tab reload.
+    console.warn(`BinB bundled font preload did not finish: ${String(error)}`);
   });
-  Promise.all(faces.map(([family, file, weight]) => loadFace(family, file, weight)))
-    .then(() => continueRender(handle))
-    .catch((error) => {
-      throw new Error(String(error));
-    });
 }
