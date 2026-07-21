@@ -40,6 +40,13 @@ export function packageEpisode(id, buildManifest) {
     episodeId: id, title: locked.title, ...locked.packaging,
     note: "Upload manual ke YouTube Shorts / Instagram Reels / TikTok. Tidak ada uploader otomatis.",
   });
+  if (locked.campaign) {
+    writeJson(path.join(pubDir, "campaign-brief.json"), {
+      episodeId: id,
+      campaign: locked.campaign,
+      note: "Review manual: deliverable, disclosure, rights, CTA, hashtags, and platform rules before upload. BinB never uploads automatically.",
+    });
+  }
   writeJson(path.join(pubDir, "build-manifest.json"), buildManifest);
 
   const entries = fs.readdirSync(pubDir).filter((f) => f !== "SHA256SUMS.txt").sort();

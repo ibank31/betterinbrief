@@ -27,6 +27,7 @@ const {validateEpisode} = await import("../app/pipeline/validate.mjs");
 const {lockEpisode, lockedCoreSha} = await import("../app/pipeline/lock.mjs");
 const {deriveRenderProps, compileEpisode, splitCaptions} = await import("../app/pipeline/compile.mjs");
 const {migrateOld} = await import("../app/pipeline/migrate.mjs");
+const {chunkPlan, chunkCacheStatus} = await import("../app/pipeline/render.mjs");
 
 const example = readJson(path.join(SYSTEM_DIR, "examples", "Example_001", "episode.json"));
 const fakeTts = (ep) => ({
@@ -145,6 +146,30 @@ test("compile: deriveRenderProps deterministik & manifest lengkap", () => {
 test("captions: reading-speed & pemecahan teks", () => {
   const chunks = splitCaptions("Kalimat pertama yang cukup panjang untuk dipecah. Kalimat kedua.", 40);
   assert(chunks.length >= 2 && chunks.every((c) => c.length <= 40), "caption terpecah sesuai batas");
+});
+
+// 6b. Renderer resume contract: two valid chunks must survive a missing middle
+// chunk, while changed props invalidate the entire cache. No Remotion render is
+// needed; a tiny valid A/V fixture exercises the same ffprobe validation path.
+test("render cache: resume hanya melewati chunk valid setelah kegagalan tengah", () => {
+  const chunkDir = path.join(tmpRoot, "chunk-cache");
+  fs.mkdirSync(chunkDir, {recursive: true});
+  const plan = chunkPlan(601);
+  const fixture = path.join(chunkDir, "fixture.mp4");
+  const made = spawnSync("ffmpeg", ["-y", "-v", "error", "-f", "lavfi", "-i", "testsrc2=s=128x128:r=30", "-f", "lavfi", "-i", "anullsrc=r=48000:cl=stereo", "-t", "1", "-c:v", "libx264", "-pix_fmt", "yuv420p", "-c:a", "aac", "-shortest", fixture], {encoding: "utf8"});
+  assert(made.status === 0, `fixture ffmpeg gagal: ${made.stderr}`);
+  // Simulate a run where chunk 300-599 crashed, while the completed edge
+  // chunks remain intact on disk.
+  fs.copyFileSync(fixture, path.join(chunkDir, plan[0].file));
+  fs.copyFileSync(fixture, path.join(chunkDir, plan[2].file));
+  const state = {propsSha256: "props-a", frameCount: 601, chunkFrames: 300, renderer: {version: "chunked-v1"}, chunks: plan};
+  const resumed = chunkCacheStatus({previous: structuredClone(state), state, chunkDir});
+  assert(resumed.compatible === true, "manifest identik harus kompatibel");
+  assert(resumed.validChunks.length === 2, "hanya dua chunk selesai yang boleh cache hit");
+  assert(resumed.validChunks.includes(plan[0].file) && resumed.validChunks.includes(plan[2].file), "chunk awal dan akhir harus dipertahankan");
+  const changedProps = {...state, propsSha256: "props-b"};
+  const invalidated = chunkCacheStatus({previous: state, state: changedProps, chunkDir});
+  assert(invalidated.compatible === false && invalidated.validChunks.length === 0, "props baru harus membatalkan cache lama");
 });
 
 // 7. REGRESSION: JOB LOSS vs REPLACEMENT harus GAGAL

@@ -29,6 +29,9 @@ const VISUAL_LANES = [
 const VISUAL_DENSITIES = ["quiet", "editorial", "dense"];
 const VISUAL_MATERIALS = ["paper", "scan", "grid", "grain", "halftone"];
 const NARRATIVE_DEVICES = ["two_tracks", "evidence_scan", "decision_graph", "task_system", "priority_signal"];
+const ASSET_ROLES = ["evidence", "context", "metaphor"];
+const ASSET_KINDS = ["original_data_visual", "original_diagram", "source_excerpt", "ui_capture", "map", "public_domain", "cc_licensed", "original_photo"];
+const ASSET_RIGHTS = ["original", "public_domain", "cc_verified", "permission_verified", "not_applicable"];
 
 function checkEnum(errors, schema, obj, key, where) {
   const spec = schema.properties[key];
@@ -76,7 +79,10 @@ export function validateEpisode(episode) {
     if (episode.accountPhase !== "mature") errors.push("Campaign hanya boleh pada accountPhase mature");
     if (episode.formatFamily !== "campaign_clip") errors.push("Campaign harus formatFamily campaign_clip");
     if (!episode.campaign) errors.push("campaign metadata wajib");
-    else for (const k of ["briefVerified", "rightsVerified"]) if (episode.campaign[k] !== true) errors.push(`campaign.${k} harus true`);
+    else {
+      for (const k of ["briefVerified", "rightsVerified"]) if (episode.campaign[k] !== true) errors.push(`campaign.${k} harus true`);
+      for (const k of ["platform", "briefUrl", "disclosureText"]) if (!String(episode.campaign[k] || "").trim()) errors.push(`campaign.${k} wajib untuk campaign clip`);
+    }
   }
 
   // sources & claims
@@ -158,6 +164,34 @@ export function validateEpisode(episode) {
         }
         if (vs.seed !== undefined && (typeof vs.seed !== "string" || !vs.seed.trim())) {
           errors.push(`${where}: visualSystem.seed harus string tidak kosong`);
+        }
+      }
+    }
+    // Optional, local-first Evidence & Context Asset Layer. Original
+    // diagrams/data visuals need no external file; every external asset must
+    // be traceable to a source and a rights record before lock.
+    if (s.visualAssets !== undefined) {
+      if (!Array.isArray(s.visualAssets)) {
+        errors.push(`${where}: visualAssets harus array`);
+      } else {
+        const assetIds = new Set();
+        for (const asset of s.visualAssets) {
+          const assetWhere = `${where} visualAsset ${asset?.assetId || "?"}`;
+          if (!asset || typeof asset !== "object" || Array.isArray(asset)) { errors.push(`${assetWhere}: harus object`); continue; }
+          if (!/^A[0-9]{2,}$/.test(asset.assetId || "")) errors.push(`${assetWhere}: assetId harus A01, A02, ...`);
+          if (assetIds.has(asset.assetId)) errors.push(`${assetWhere}: assetId duplikat dalam scene`);
+          assetIds.add(asset.assetId);
+          if (!ASSET_ROLES.includes(asset.role)) errors.push(`${assetWhere}: role tidak dikenal`);
+          if (!ASSET_KINDS.includes(asset.kind)) errors.push(`${assetWhere}: kind tidak dikenal`);
+          if (!ASSET_RIGHTS.includes(asset.rightsStatus)) errors.push(`${assetWhere}: rightsStatus tidak dikenal`);
+          if (!asset.editorialPurpose || asset.editorialPurpose.trim().length < 8) errors.push(`${assetWhere}: editorialPurpose wajib dan spesifik`);
+          if (asset.claimIds !== undefined && (!Array.isArray(asset.claimIds) || asset.claimIds.some((cid) => !claimIds.has(cid)))) errors.push(`${assetWhere}: claimIds memuat claim tidak dikenal`);
+          const external = ["source_excerpt", "ui_capture", "map", "public_domain", "cc_licensed", "original_photo"].includes(asset.kind);
+          if (external && (!asset.file || !String(asset.file).startsWith("assets/"))) errors.push(`${assetWhere}: asset external wajib file di assets/`);
+          if (["source_excerpt", "map", "cc_licensed", "public_domain"].includes(asset.kind) && !sourceIds.has(asset.sourceId)) errors.push(`${assetWhere}: ${asset.kind} wajib menunjuk sourceId`);
+          if (asset.kind === "cc_licensed" && (!asset.licenseUrl || !asset.attribution)) errors.push(`${assetWhere}: CC asset wajib licenseUrl dan attribution`);
+          if (asset.kind === "public_domain" && asset.rightsStatus !== "public_domain") errors.push(`${assetWhere}: public_domain harus rightsStatus public_domain`);
+          if (["original_data_visual", "original_diagram"].includes(asset.kind) && asset.rightsStatus !== "original") errors.push(`${assetWhere}: original visual harus rightsStatus original`);
         }
       }
     }

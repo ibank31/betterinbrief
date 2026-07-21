@@ -48,6 +48,7 @@ export function deriveRenderProps(locked, ttsManifest) {
       id: scene.id, role: scene.role, type: scene.type, variant: scene.variant,
       surface: scene.surface, motion: scene.motion,
       ...(scene.visualSystem ? {visualSystem: scene.visualSystem} : {}),
+      ...(scene.visualAssets ? {visualAssets: scene.visualAssets} : {}),
       narration: scene.narration,
       audio: `audio/${locked.episodeId}/${scene.id}.wav`,
       timing: {from, durationInFrames, speechSeconds: Math.round(speech * 1000) / 1000},

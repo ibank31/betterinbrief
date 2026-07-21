@@ -11,7 +11,7 @@ import {validateEpisode} from "../pipeline/validate.mjs";
 import {lockEpisode, lockedCoreSha} from "../pipeline/lock.mjs";
 import {runTts} from "../pipeline/tts.mjs";
 import {compileEpisode} from "../pipeline/compile.mjs";
-import {renderEpisode} from "../pipeline/render.mjs";
+import {renderEpisode, renderPreview} from "../pipeline/render.mjs";
 import {mixEpisode} from "../pipeline/mix.mjs";
 import {encodeEpisode} from "../pipeline/encode.mjs";
 import {runQc} from "../qc/run-qc.mjs";
@@ -91,37 +91,37 @@ function buildManifestFor(id, lockRes, stages) {
   };
 }
 
-function cmdBuild(id, flags) {
+async function cmdBuild(id, flags) {
   const stages = {};
   const t0 = Date.now();
-  const stage = (name, fn) => {
+  const stage = async (name, fn) => {
     const s = Date.now();
     console.log(`\n== [${name}] ==`);
-    const out = fn();
+    const out = await fn();
     stages[name] = {ok: true, seconds: Math.round((Date.now() - s) / 100) / 10};
     return out;
   };
-  stage("01-preflight", () => preflight({heavy: true}));
-  stage("02-validate", () => cmdValidate(id));
-  const lockRes = stage("03-lock", () => lockEpisode(id, {forceRelock: flags.includes("--force-relock")}));
-  const tts = stage("04-tts", () => runTts(id));
-  stage("05-audio-probe", () => {
+  await stage("01-preflight", () => preflight({heavy: true}));
+  await stage("02-validate", () => cmdValidate(id));
+  const lockRes = await stage("03-lock", () => lockEpisode(id, {forceRelock: flags.includes("--force-relock")}));
+  const tts = await stage("04-tts", () => runTts(id));
+  await stage("05-audio-probe", () => {
     console.log(tts.scenes.map((s) => `${s.sceneId}: ${s.durationSec.toFixed(2)}s @${s.sampleRate}Hz peak ${s.peakDb}dB${s.generated ? "" : " (cache)"}`).join("\n"));
   });
-  stage("06-compile", () => compileEpisode(id, tts));
-  stage("07-render", () => renderEpisode(id));
-  stage("08-mix", () => mixEpisode(id));
-  stage("09-encode", () => encodeEpisode(id));
-  const qc = stage("10-12-qc", () => runQc(id)); // technical + visual + semantic
+  await stage("06-compile", () => compileEpisode(id, tts));
+  await stage("07-render", () => renderEpisode(id));
+  await stage("08-mix", () => mixEpisode(id));
+  await stage("09-encode", () => encodeEpisode(id));
+  const qc = await stage("10-12-qc", () => runQc(id)); // technical + visual + semantic
   const manifest = buildManifestFor(id, lockRes, stages);
   writeJson(path.join(P.work(id), "build-manifest.json"), manifest);
-  const pack = stage("13-14-package", () => packageEpisode(id, manifest));
+  const pack = await stage("13-14-package", () => packageEpisode(id, manifest));
   console.log(`\nBUILD SELESAI dalam ${Math.round((Date.now() - t0) / 1000)}s`);
   console.log(`QC: ${qc.verdict}. Publish Ready: ${pack.pubDir}`);
   console.log("Upload manual ke YouTube Shorts / IG Reels / TikTok - lihat publishing-copy.json.");
 }
 
-function cmdTest() {
+async function cmdTest() {
   // Smoke test end-to-end 3-5 detik dengan music fixture silent.
   const id = "SmokeTest_000";
   const dir = P.episodes(id);
@@ -141,8 +141,44 @@ function cmdTest() {
   writeJson(path.join(dir, "episode.json"), smoke);
   fs.writeFileSync(path.join(dir, "sources", "smoke-evidence.txt"), "fixture evidence untuk smoke test\n");
   fs.rmSync(P.lockedJson(id), {force: true});
-  cmdBuild(id, ["--force-relock"]);
+  await cmdBuild(id, ["--force-relock"]);
   console.log("\nSMOKE TEST LULUS: pipeline TTS->render->mix->encode->QC->package bekerja di perangkat ini.");
+}
+
+function parsePreviewFlags(tokens) {
+  let sceneId;
+  let start;
+  let end;
+  for (let i = 0; i < tokens.length; i++) {
+    if (tokens[i] === "--scene") sceneId = tokens[++i];
+    if (tokens[i] === "--frames") {
+      const match = /^(\d+)-(\d+)$/.exec(tokens[++i] || "");
+      if (!match) throw new Error("Format --frames harus <start>-<end>, contoh: --frames 300-389");
+      start = Number(match[1]);
+      end = Number(match[2]);
+    }
+  }
+  if (sceneId && start !== undefined) throw new Error("Gunakan salah satu: --scene S03 atau --frames 300-389.");
+  return {sceneId, start, end};
+}
+
+async function cmdRemix(id) {
+  preflight({heavy: false});
+  const workDir = P.work(id);
+  for (const f of ["render-manifest.json", "render-props.json", "render-content-manifest.json"]) {
+    if (!fs.existsSync(path.join(workDir, f))) throw new Error(`remix membutuhkan ${f}; tidak ada visual render baru yang akan dibuat.`);
+  }
+  const locked = readJson(P.lockedJson(id));
+  console.log("\n== [remix-mix] ==");
+  mixEpisode(id);
+  console.log("\n== [remix-encode] ==");
+  encodeEpisode(id);
+  console.log("\n== [remix-qc] ==");
+  const qc = runQc(id);
+  const manifest = buildManifestFor(id, {sha256: lockedCoreSha(locked)}, {note: "remix-only: existing visual render reused", remixAt: new Date().toISOString()});
+  console.log("\n== [remix-package] ==");
+  const pack = packageEpisode(id, manifest);
+  console.log(`\nREMIX SELESAI. QC: ${qc.verdict}. Publish Ready: ${pack.pubDir}`);
 }
 
 const HELP = `binb - Better in Brief production system v${PIPELINE_VERSION}
@@ -155,6 +191,11 @@ Perintah:
   binb lock <id>              Kunci episode -> episode.locked.json (+hash)
   binb build <id>             Pipeline penuh sampai Publish Ready
   binb render <id>            Render ulang dari locked (butuh compile sebelumnya)
+  binb preview <id> --scene S03
+                              Render satu scene untuk review tanpa full render
+  binb preview <id> --frames 300-389
+                              Render frame range pendek untuk review transition
+  binb remix <id>             Mix -> encode -> QC -> package tanpa render visual
   binb qc <id>                Jalankan ulang QC
   binb package <id>           Paketkan hasil yang sudah lolos QC
   binb migrate <folder>       Rencana migrasi sistem lama (dry-run; --apply untuk eksekusi)
@@ -174,15 +215,22 @@ async function main() {
       case "help": case undefined: console.log(HELP); break;
       case "version": console.log(`binb ${PIPELINE_VERSION} (remotion ${versionOf("remotion") || "?"}, node ${process.versions.node})`); break;
       case "doctor": process.exit(doctor() ? 0 : 1); break;
-      case "test": cmdTest(); break;
+      case "test": await cmdTest(); break;
       case "new": if (!arg) fail("binb new <episode-id>"); newEpisode(arg); break;
       case "validate": if (!arg) fail("binb validate <episode-id>"); cmdValidate(arg); break;
       case "lock": if (!arg) fail("binb lock <episode-id>"); {
         const r = lockEpisode(arg, {forceRelock: flags.includes("--force-relock")});
         console.log(`Locked: ${r.path}\nsha256: ${r.sha256}`);
       } break;
-      case "build": if (!arg || arg.startsWith("--")) fail("binb build <episode-id>"); cmdBuild(arg, flags); break;
-      case "render": if (!arg) fail("binb render <episode-id>"); preflight({heavy: true}); console.log(JSON.stringify(renderEpisode(arg), null, 2)); break;
+      case "build": if (!arg || arg.startsWith("--")) fail("binb build <episode-id>"); await cmdBuild(arg, flags); break;
+      case "render": if (!arg) fail("binb render <episode-id>"); preflight({heavy: true}); console.log(JSON.stringify(await renderEpisode(arg), null, 2)); break;
+      case "preview": if (!arg) fail("binb preview <episode-id> --scene S03 | --frames 300-389"); {
+        const preview = parsePreviewFlags(rest);
+        if (!preview.sceneId && preview.start === undefined) fail("preview membutuhkan --scene atau --frames");
+        preflight({heavy: false});
+        console.log(JSON.stringify(await renderPreview(arg, preview), null, 2));
+      } break;
+      case "remix": if (!arg) fail("binb remix <episode-id>"); await cmdRemix(arg); break;
       case "qc": if (!arg) fail("binb qc <episode-id>"); {
         const rep = runQc(arg);
         console.log(fs.readFileSync(path.join(P.work(arg), "qc-summary.txt"), "utf8"));
