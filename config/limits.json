@@ -1,0 +1,35 @@
+{
+  "text": {
+    "titleMax": 90,
+    "eyebrowMax": 34,
+    "headlineMax": 76,
+    "subtitleMax": 90,
+    "statisticMax": 6,
+    "labelMax": 70,
+    "narrationMaxPerScene": 260,
+    "captionMaxChars": 62,
+    "youtubeTitleMax": 100,
+    "tiktokCaptionMax": 2200,
+    "instagramCaptionMax": 2200
+  },
+  "captions": {
+    "maxCharsPerSecond": 20,
+    "minDurationSec": 0.6
+  },
+  "scenes": {
+    "minSpeechSec": 1.0,
+    "maxSpeechSec": 14,
+    "tailPadSec": 0.45,
+    "minPerEpisode": 4,
+    "maxPerEpisode": 12
+  },
+  "video": {
+    "blackOpeningMaxSec": 0.034,
+    "maxDurationSec": 180,
+    "freezeWarnSec": 3.5
+  },
+  "storage": {
+    "warnFreeGb": 25,
+    "stopFreeGb": 15
+  }
+}

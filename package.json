@@ -1,0 +1,29 @@
+{
+  "name": "better-in-brief-remotion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Termux-first Remotion system for Better in Brief",
+  "license": "UNLICENSED",
+  "scripts": {
+    "studio": "remotion studio app/remotion/src/index.ts",
+    "studio:lab": "remotion studio app/remotion/src/index.lab.ts",
+    "versions": "remotion versions",
+    "typecheck": "tsc --noEmit",
+    "compositions": "remotion compositions app/remotion/src/index.ts --browser-executable=/usr/bin/chromium --gl=swiftshader",
+    "compositions:lab": "remotion compositions app/remotion/src/index.lab.ts --browser-executable=/usr/bin/chromium --gl=swiftshader",
+    "test": "node tests/run-tests.mjs"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.489",
+    "@remotion/renderer": "4.0.489",
+    "react": "19.2.7",
+    "react-dom": "19.2.7",
+    "remotion": "4.0.489"
+  },
+  "devDependencies": {
+    "@types/node": "26.1.1",
+    "@types/react": "19.2.17",
+    "@types/react-dom": "19.2.3",
+    "typescript": "5.9.3"
+  }
+}

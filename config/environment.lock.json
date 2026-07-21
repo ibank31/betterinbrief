@@ -1,0 +1,12 @@
+{
+  "productionRuntime": "debian-proot",
+  "node": "20.x (proven 20.19.2)",
+  "npm": "9.x (proven 9.2.0)",
+  "chromium": "/usr/bin/chromium",
+  "remotion": "4.0.489",
+  "python": "3.12 via uv",
+  "kokoro": "0.7.16",
+  "torch": "2.6.0", "scipy": "1.15.2", "transformers": "4.49.0",
+  "arch": "arm64",
+  "forbiddenRuntimes": ["termux-native-node-26", "termux-native-python-3.14"]
+}

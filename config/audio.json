@@ -1,0 +1,11 @@
+{
+  "_comment": "SATU-SATUNYA sumber kebijakan audio. Semua stage, manifest, dan QC membaca file ini. Ubah target hanya di sini setelah listening test.",
+  "integratedLoudnessTargetLufs": -11,
+  "truePeakMaxDbtp": -1.0,
+  "loudnessToleranceLu": 1.0,
+  "lraMaxLu": 11,
+  "sampleRate": 48000,
+  "channels": 2,
+  "music": {"baseGainDb": -14, "duck": {"threshold": 0.05, "ratio": 8, "attackMs": 5, "releaseMs": 250}},
+  "voice": {"expectedSampleRate": 24000, "clippingPeakDbfs": -0.1, "maxLeadingSilenceSec": 0.6, "maxTrailingSilenceSec": 0.8}
+}

@@ -1,0 +1,22 @@
+# Build artifacts
+work/
+publish/
+
+# Media output
+*.mp4
+*.wav
+*.mp3
+*.aac
+
+# Dependencies
+node_modules/
+.next/
+out/
+
+# Logs
+logs/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db

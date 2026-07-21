@@ -1,0 +1,16 @@
+{
+  "_comment": "Encoding canonical untuk SEMUA platform. Upload tetap manual - tidak ada uploader otomatis.",
+  "encode": {
+    "videoCodec": "libx264", "profile": "high", "level": "4.0", "pixelFormat": "yuv420p",
+    "colorRange": "tv", "colorPrimaries": "bt709", "colorTrc": "bt709", "colorSpace": "bt709",
+    "crf": 18, "maxrateKbps": 8000, "bufsizeKbps": 16000, "minAcceptableVideoKbps": 3000,
+    "hardMinVideoKbps": 300,
+    "audioCodec": "aac", "audioBitrateKbps": 192, "audioSampleRate": 48000, "audioChannels": 2,
+    "movflags": "+faststart", "gopSeconds": 2
+  },
+  "targets": {
+    "youtubeShorts": {"maxDurationSec": 180},
+    "instagramReels": {"maxDurationSec": 180},
+    "tiktok": {"maxDurationSec": 600}
+  }
+}

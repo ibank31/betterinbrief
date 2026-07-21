@@ -1,0 +1,12 @@
+{
+  "canvas": {"width": 1080, "height": 1920, "fps": 30},
+  "colors": {"black": "#000000", "orange": "#FE5001", "white": "#FFFFFF"},
+  "font": {
+    "family": "Inter",
+    "files": ["Inter-Regular.ttf", "Inter-SemiBold.ttf", "Inter-Bold.ttf", "Inter-Black.ttf"],
+    "bundledDir": "app/remotion/public/fonts"
+  },
+  "safeZones": {"left": 72, "right": 128, "top": 160, "bottomReserve": 420},
+  "closing": {"durationFrames": 66},
+  "noStandaloneIntro": true
+}

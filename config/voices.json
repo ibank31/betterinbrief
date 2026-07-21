@@ -1,0 +1,8 @@
+{
+  "engine": "kokoro",
+  "modelVersion": "0.7.16",
+  "defaultVoice": "af_sarah",
+  "allowedVoices": ["af_sarah", "af_kore", "af_bella", "am_adam", "bf_emma"],
+  "speed": 1.0,
+  "pythonEnv": "~/.binb/kokoro-venv"
+}
