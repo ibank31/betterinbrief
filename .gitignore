@@ -24,3 +24,5 @@ Thumbs.db
 *.bak-s01dark
 tools/assets-keys.json
 *.bak-tsfix
+
+!assets/music/**/*.mp3
