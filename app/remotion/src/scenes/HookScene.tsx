@@ -17,20 +17,25 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
   const {fps} = useVideoConfig();
   const hit = spring({frame, fps, config: motion.spring.tight});
   const headlineIn = interpolate(frame, [8, 20], [0, 1], clamp);
-  // Count-up statistik: angka bergerak naik di ~0.9 detik pertama agar frame
+  // Count-up statistik: angka bergerak naik di ~1.3 detik pertama agar frame
   // pembuka tidak statis (retention) tanpa mengubah nilai akhirnya.
   const statMatch = statistic.match(/^(\d+)(.*)$/);
-  const countProgress = interpolate(frame, [0, 26], [0, 1], clamp);
-  const countEased = 1 - Math.pow(1 - countProgress, 3);
+  const countProgress = interpolate(frame, [0, 38], [0, 1], clamp);
+  const countEased = 1 - Math.pow(1 - countProgress, 2);
   const displayStatistic = statMatch
     ? `${Math.round(parseInt(statMatch[1], 10) * countEased)}${statMatch[2]}`
     : statistic;
-  return <EditorialFrame background={colors.black} color={colors.white} world={world} surface={surface}>
-    <NarrativeDevice kind={world?.device ?? "two_tracks"} surface={surface ?? "dark"} />
+  const s = surface ?? "dark";
+  const ink = s === "dark" ? colors.white : colors.black;
+  const bg = s === "dark" ? colors.black : s === "orange" ? colors.orange : colors.warmWhite;
+  const accent = s === "orange" ? colors.white : colors.orange;
+  const eyebrowColor = s === "dark" ? colors.gray300 : s === "orange" ? colors.black : colors.gray700;
+  return <EditorialFrame background={bg} color={ink} world={world} surface={s}>
+    <NarrativeDevice kind={world?.device ?? "two_tracks"} surface={s} />
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 820}}>
-      <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
+      <Eyebrow color={eyebrowColor}>{eyebrow}</Eyebrow>
       <div style={{display: "flex", alignItems: "baseline", marginTop: 64, transform: `translateY(${(1-hit)*42}px)`, opacity: hit}}>
-        <span style={{fontSize: 260, lineHeight: .82, fontWeight: typography.weight.black, letterSpacing: -12, color: colors.orange}}>{displayStatistic}</span>
+        <span style={{fontSize: 260, lineHeight: .82, fontWeight: typography.weight.black, letterSpacing: -12, color: accent}}>{displayStatistic}</span>
         <span style={{marginLeft: 26, fontSize: typography.size.display, lineHeight: 1, fontWeight: typography.weight.bold, letterSpacing: -3}}>{statisticSuffix}</span>
       </div>
       <div style={{marginTop: 74, maxWidth: 790, fontSize: typography.size.headline, lineHeight: typography.lineHeight.headline, fontWeight: typography.weight.black, letterSpacing: typography.letterSpacing.headline, opacity: headlineIn, transform: `translateX(${(1-headlineIn)*-36}px)`}}>{headline}</div>
@@ -38,7 +43,7 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
     <div style={{position: "absolute", left: 560, top: 800, display: "flex", gap: 24}}>
       {[0,1,2,3].map((i) => {
         const on = i === highlightedIndex;
-        const workerColor = on ? colors.orange : colors.gray700;
+        const workerColor = on ? accent : colors.gray700;
         const workerIn = interpolate(frame, [12 + i * 3, 22 + i * 3], [0, 1], clamp);
 
         return (

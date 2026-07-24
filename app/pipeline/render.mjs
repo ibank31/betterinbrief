@@ -9,7 +9,7 @@ const CHROMIUM = process.env.BINB_CHROMIUM || "/usr/bin/chromium";
 const CHUNK_FRAMES = 300;
 const RENDER_TIMEOUT_MS = 300000;
 const CHUNK_ATTEMPTS = 2;
-const RENDER_CACHE_VERSION = "chunked-v1";
+const RENDER_CACHE_VERSION = "chunked-v5";
 // A renderer tab that is alive but no longer producing output is more useful
 // to diagnose as a failed chunk than as a five-minute opaque timeout.
 const HEALTH_WARN_MS = 45000;

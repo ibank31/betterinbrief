@@ -79,6 +79,8 @@ export type VisualWorldSpec = {
   material: "paper" | "scan" | "grid" | "grain" | "halftone";
   /** Optional scene-level metaphor. Components provide a safe type default. */
   device?: NarrativeDeviceKind;
+  /** Optional media backdrop staged by tools/assets-fetch.mjs. */
+  media?: {src: string; kind: "image" | "video"; opacity?: number; treatment?: "backdrop" | "hero"};
 };
 
 export type SceneMotion =
@@ -223,6 +225,21 @@ type EpisodeSceneBase<
   motion: SceneMotion;
   /** Optional authoring override. Absent values are resolved by the system. */
   visualSystem?: Partial<VisualWorldSpec>;
+  /** Optional evidence/context asset layer (divalidasi validate.mjs). */
+  visualAssets?: Array<{
+    assetId: string;
+    role: string;
+    kind: string;
+    rightsStatus: string;
+    file?: string;
+    sourceId?: string;
+    licenseUrl?: string;
+    attribution?: string;
+    editorialPurpose?: string;
+    claimIds?: string[];
+    treatment?: string;
+    fetch?: Record<string, unknown>;
+  }>;
   narration: string;
   audio: string;
   timing: SceneTiming;

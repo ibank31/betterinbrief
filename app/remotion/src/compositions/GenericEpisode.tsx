@@ -12,6 +12,7 @@ import {logoAssets} from "../brand/logo-assets";
 import type {
   EpisodeRenderProps,
   EpisodeRenderScene,
+  VisualWorldSpec,
 } from "../episodes/types";
 import {CaptionOverlay} from "../scenes/CaptionOverlay";
 import {ClosingBrandScene} from "../scenes/ClosingBrandScene";
@@ -84,12 +85,22 @@ const LivingDrift: React.FC<React.PropsWithChildren<{
 
 const EpisodeScene: React.FC<{
   scene: EpisodeRenderScene;
-}> = ({scene}) => {
-  const world = {
-    ...defaultVisualWorld(scene.id, scene.surface, scene.type),
+  episodeId: string;
+}> = ({scene, episodeId}) => {
+  const assetEntry = (scene.visualAssets ?? []).find((a) => typeof a.file === "string" && a.file.startsWith("assets/"));
+  const mediaBase = assetEntry && assetEntry.file ? assetEntry.file.slice(7) : null;
+  const world: VisualWorldSpec = {
+    ...defaultVisualWorld(scene.id, scene.surface, scene.type, episodeId),
     ...scene.visualSystem,
-    seed: scene.visualSystem?.seed ?? scene.id,
+    seed: scene.visualSystem?.seed ?? episodeId + "-" + scene.id,
   };
+  if (mediaBase) {
+    world.media = world.media ?? {
+      src: "assets/" + episodeId + "/" + mediaBase,
+      kind: (/\.(mp4|webm|mov)$/i).test(mediaBase) ? "video" : "image",
+      treatment: assetEntry.treatment === "hero" ? "hero" : "backdrop",
+    };
+  }
   switch (scene.type) {
     case "hook":
       return <HookScene {...scene.visual} world={world} surface={scene.surface} />;
@@ -149,7 +160,7 @@ const EpisodeScene: React.FC<{
 
 export const GenericEpisode: React.FC<
   EpisodeRenderProps
-> = ({scenes, captions}) => {
+> = ({episodeId, scenes, captions}) => {
   const totalFrames = scenes.reduce(
     (acc, s) => Math.max(acc, s.timing.from + s.timing.durationInFrames),
     1,
@@ -189,12 +200,12 @@ export const GenericEpisode: React.FC<
                 layout="none"
               >
                 <VariantSceneFrame scene={scene}>
-                  <EpisodeScene scene={scene} />
+                  <EpisodeScene scene={scene} episodeId={episodeId} />
                 </VariantSceneFrame>
               </Sequence>
             ) : (
               <VariantSceneFrame scene={scene}>
-                <EpisodeScene scene={scene} />
+                <EpisodeScene scene={scene} episodeId={episodeId} />
               </VariantSceneFrame>
             )}
           </LivingDrift>

@@ -7,7 +7,7 @@
   "sampleRate": 48000,
   "channels": 2,
   "music": {
-    "baseGainDb": -14,
+    "baseGainDb": -19,
     "duck": {
       "threshold": 0.05,
       "ratio": 8,

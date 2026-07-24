@@ -30,7 +30,7 @@ const VISUAL_DENSITIES = ["quiet", "editorial", "dense"];
 const VISUAL_MATERIALS = ["paper", "scan", "grid", "grain", "halftone"];
 const NARRATIVE_DEVICES = ["two_tracks", "evidence_scan", "decision_graph", "task_system", "priority_signal"];
 const ASSET_ROLES = ["evidence", "context", "metaphor"];
-const ASSET_KINDS = ["original_data_visual", "original_diagram", "source_excerpt", "ui_capture", "map", "public_domain", "cc_licensed", "original_photo"];
+const ASSET_KINDS = ["original_data_visual", "original_diagram", "source_excerpt", "ui_capture", "map", "public_domain", "cc_licensed", "original_photo", "stock_media", "ai_generated"];
 const ASSET_RIGHTS = ["original", "public_domain", "cc_verified", "permission_verified", "not_applicable"];
 
 function checkEnum(errors, schema, obj, key, where) {
@@ -186,7 +186,7 @@ export function validateEpisode(episode) {
           if (!ASSET_RIGHTS.includes(asset.rightsStatus)) errors.push(`${assetWhere}: rightsStatus tidak dikenal`);
           if (!asset.editorialPurpose || asset.editorialPurpose.trim().length < 8) errors.push(`${assetWhere}: editorialPurpose wajib dan spesifik`);
           if (asset.claimIds !== undefined && (!Array.isArray(asset.claimIds) || asset.claimIds.some((cid) => !claimIds.has(cid)))) errors.push(`${assetWhere}: claimIds memuat claim tidak dikenal`);
-          const external = ["source_excerpt", "ui_capture", "map", "public_domain", "cc_licensed", "original_photo"].includes(asset.kind);
+          const external = ["source_excerpt", "ui_capture", "map", "public_domain", "cc_licensed", "original_photo", "stock_media", "ai_generated"].includes(asset.kind);
           if (external && (!asset.file || !String(asset.file).startsWith("assets/"))) errors.push(`${assetWhere}: asset external wajib file di assets/`);
           if (["source_excerpt", "map", "cc_licensed", "public_domain"].includes(asset.kind) && !sourceIds.has(asset.sourceId)) errors.push(`${assetWhere}: ${asset.kind} wajib menunjuk sourceId`);
           if (asset.kind === "cc_licensed" && (!asset.licenseUrl || !asset.attribution)) errors.push(`${assetWhere}: CC asset wajib licenseUrl dan attribution`);

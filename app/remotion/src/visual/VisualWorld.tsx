@@ -1,7 +1,7 @@
 import React from "react";
-import {AbsoluteFill, interpolate, random, useCurrentFrame} from "remotion";
+import {AbsoluteFill, Img, OffthreadVideo, interpolate, random, staticFile, useCurrentFrame} from "remotion";
 import {colors} from "../brand/tokens";
-import type {SceneSurface, VisualDensity, VisualLane, VisualWorldSpec} from "../episodes/types";
+import type {NarrativeDeviceKind, SceneSurface, VisualDensity, VisualLane, VisualWorldSpec} from "../episodes/types";
 
 const laneDefaults: Record<VisualLane, {density: VisualDensity; material: "paper" | "scan" | "grid" | "grain" | "halftone"}> = {
   editorial_collage: {density: "editorial", material: "paper"},
@@ -14,27 +14,51 @@ const laneDefaults: Record<VisualLane, {density: VisualDensity; material: "paper
   editorial_type: {density: "quiet", material: "paper"},
 };
 
+const hashKey = (value: string): number => {
+  let h = 5381;
+  for (let i = 0; i < value.length; i += 1) h = ((h * 33) ^ value.charCodeAt(i)) >>> 0;
+  return h;
+};
+
+const laneOptionsByType: Record<string, VisualLane[]> = {
+  hook: ["object_metaphor", "editorial_collage", "interface_reality"],
+  correction: ["editorial_collage", "diagram_world", "editorial_type"],
+  data_proof: ["evidence_desk", "data_theatre", "diagram_world"],
+  task_breakdown: ["diagram_world", "interface_reality"],
+  comparison: ["diagram_world", "data_theatre", "evidence_desk"],
+  outcome: ["editorial_type", "object_metaphor", "cinematic_context"],
+  closing_brand: ["editorial_type"],
+};
+
+const deviceOptionsByType: Record<string, NarrativeDeviceKind[]> = {
+  hook: ["two_tracks", "priority_signal", "evidence_scan"],
+  correction: ["decision_graph", "evidence_scan", "two_tracks"],
+  data_proof: ["evidence_scan", "priority_signal", "decision_graph"],
+  task_breakdown: ["task_system", "decision_graph"],
+  comparison: ["two_tracks", "decision_graph", "priority_signal"],
+  outcome: ["priority_signal", "decision_graph", "evidence_scan"],
+  closing_brand: [],
+};
+
 export const defaultVisualWorld = (
   sceneId: string,
   surface: SceneSurface,
   type: string,
+  variationKey?: string,
 ): VisualWorldSpec => {
-  const laneByType: Record<string, VisualLane> = {
-    hook: "object_metaphor",
-    correction: "editorial_collage",
-    data_proof: "evidence_desk",
-    task_breakdown: "diagram_world",
-    comparison: "diagram_world",
-    outcome: "editorial_type",
-    closing_brand: "editorial_type",
-  };
-  const lane = laneByType[type] ?? "editorial_collage";
-  return {
+  const lanes = laneOptionsByType[type] ?? ["editorial_collage"];
+  const devices = deviceOptionsByType[type] ?? [];
+  const key = variationKey ?? sceneId;
+  const lane = lanes[hashKey(key + ":lane:" + type) % lanes.length] ?? "editorial_collage";
+  const device = devices.length > 0 ? devices[hashKey(key + ":device:" + type) % devices.length] : undefined;
+  const world: VisualWorldSpec = {
     lane,
     density: laneDefaults[lane].density,
     seed: sceneId,
     material: laneDefaults[lane].material,
   };
+  if (device !== undefined) world.device = device;
+  return world;
 };
 
 const paletteFor = (surface: SceneSurface) => {
@@ -105,10 +129,42 @@ const InterfaceMarks: React.FC<{seed: string; ink: string; accent: string}> = ({
   </>;
 };
 
+const MediaLayer: React.FC<{media: NonNullable<VisualWorldSpec["media"]>; surface: SceneSurface}> = ({media, surface}) => {
+  const frame = useCurrentFrame();
+  const src = staticFile(media.src);
+  const hero = media.treatment === "hero";
+  const opacity = media.opacity ?? (hero ? 1 : surface === "dark" ? 0.34 : 0.26);
+  const zoom = media.kind === "image" ? 1 + Math.min(frame * 0.00045, 0.09) : 1;
+  const mediaStyle: React.CSSProperties = {
+    width: "100%",
+    height: "100%",
+    objectFit: "cover",
+    transform: "scale(" + zoom.toFixed(4) + ")",
+    filter: hero
+      ? "grayscale(1) contrast(" + (surface === "dark" ? "1.14" : "1.08") + ") brightness(" + (surface === "dark" ? "0.66" : "0.96") + ")"
+      : surface === "dark" ? "grayscale(1) contrast(1.08) brightness(0.85)" : "grayscale(1) contrast(1.05) brightness(1.08)",
+  };
+  const frameStyle: React.CSSProperties = {
+    opacity,
+    mixBlendMode: hero ? "normal" : surface === "dark" ? "screen" : "multiply",
+    pointerEvents: "none",
+  };
+  const scrim = surface === "dark"
+    ? "linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.32) 36%, rgba(0,0,0,0.62) 74%, rgba(0,0,0,0.82) 100%)"
+    : "linear-gradient(180deg, rgba(250,247,240,0.32) 0%, rgba(250,247,240,0.26) 36%, rgba(250,247,240,0.70) 74%, rgba(250,247,240,0.88) 100%)";
+  const vignette = "radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(0,0,0,0.38) 100%)";
+  return <AbsoluteFill style={frameStyle}>
+    {media.kind === "video" ? <OffthreadVideo src={src} muted style={mediaStyle} /> : <Img src={src} style={mediaStyle} />}
+    {hero ? <AbsoluteFill style={ {backgroundImage: scrim} } /> : null}
+    {hero && surface === "dark" ? <AbsoluteFill style={ {backgroundImage: vignette} } /> : null}
+  </AbsoluteFill>;
+};
+
 export const EditorialWorld: React.FC<{world: VisualWorldSpec; surface: SceneSurface}> = ({world, surface}) => {
   const resolved = {...laneDefaults[world.lane], ...world};
   const palette = paletteFor(surface);
   return <AbsoluteFill style={{backgroundColor: palette.base, overflow: "hidden"}}>
+    {resolved.media ? <MediaLayer media={resolved.media} surface={surface} /> : null}
     <MaterialLayer material={resolved.material} ink={palette.ink} faint={palette.faint} />
     <AbsoluteFill style={{background: surface === "dark" ? "radial-gradient(circle at 92% 24%, rgba(254,80,1,0.13), transparent 30%), linear-gradient(145deg, rgba(255,255,255,0.035), transparent 42%)" : surface === "orange" ? "linear-gradient(135deg, rgba(255,255,255,0.16), transparent 42%), radial-gradient(circle at 80% 18%, rgba(0,0,0,0.12), transparent 32%)" : "radial-gradient(circle at 92% 20%, rgba(254,80,1,0.10), transparent 28%), linear-gradient(145deg, rgba(0,0,0,0.025), transparent 45%)"}} />
     {resolved.lane === "diagram_world" || resolved.lane === "data_theatre" ? <DiagramMarks seed={resolved.seed} ink={palette.ink} accent={palette.accent} /> : null}

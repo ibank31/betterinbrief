@@ -20,3 +20,6 @@ logs/
 # OS
 .DS_Store
 Thumbs.db
+*.bak-v12*
+*.bak-s01dark
+tools/assets-keys.json

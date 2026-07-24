@@ -44,7 +44,7 @@ export function mixEpisode(id) {
     "-ar", String(audioCfg.sampleRate), "-ac", String(audioCfg.channels), "-c:a", "pcm_s24le", draft]);
 
   // Loudness normalization 2-pass ke target canonical config/audio.json.
-  const target = `I=${audioCfg.integratedLoudnessTargetLufs}:TP=${audioCfg.truePeakMaxDbtp}:LRA=${audioCfg.lraMaxLu}`;
+  const target = `I=${audioCfg.integratedLoudnessTargetLufs}:TP=${audioCfg.truePeakMaxDbtp - 0.5}:LRA=${audioCfg.lraMaxLu}`;
   const p1 = run("ffmpeg", ["-i", draft, "-af", `loudnorm=${target}:print_format=json`, "-f", "null", "-"]);
   const measured = parseLoudnorm(p1.stderr);
   const linear = `loudnorm=${target}:measured_I=${measured.input_i}:measured_TP=${measured.input_tp}:measured_LRA=${measured.input_lra}:measured_thresh=${measured.input_thresh}:offset=${measured.target_offset}:linear=true:print_format=json`;
@@ -62,7 +62,7 @@ export function mixEpisode(id) {
   // Pass 3 (koreksi): loudnorm linear bisa berhenti di bawah target saat gain
   // dibatasi true peak ceiling. Terapkan gain statis + true-peak limiter,
   // ulangi maksimal 2x sampai masuk toleransi.
-  for (let i = 0; i < 2 && Math.abs(outI - targetI) > tol * 0.75; i++) {
+  for (let i = 0; i < 5 && Math.abs(outI - targetI) > tol * 0.75; i++) {
     const gainDb = +(targetI - outI).toFixed(2);
     const limit = Math.pow(10, (audioCfg.truePeakMaxDbtp - 0.7) / 20);
     const corrected = path.join(mixDir, "mixed-audio.corrected.wav");
