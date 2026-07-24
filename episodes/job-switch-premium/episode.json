@@ -1,0 +1,218 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "job-switch-premium",
+  "title": "The Loyalty Tax - Why Job Switchers Out-Earn Stayers Again",
+  "status": "draft",
+  "accountPhase": "warmup",
+  "contentOrigin": "original",
+  "pillar": "career_decision_frameworks",
+  "formatFamily": "career_framework",
+  "voice": "af_heart,af_kore",
+  "musicLane": "money_people_decisions",
+  "campaign": null,
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
+  "sources": [
+    {
+      "sourceId": "SRC01",
+      "url": "https://www.atlantafed.org/research-and-data/data/wage-growth-tracker",
+      "publisher": "Federal Reserve Bank of Atlanta",
+      "title": "Wage Growth Tracker",
+      "publishedDate": "2026-07-09",
+      "accessedDate": "2026-07-24"
+    },
+    {
+      "sourceId": "SRC02",
+      "url": "https://www.axios.com/2026/02/18/jobs-hopping-switching",
+      "publisher": "Axios",
+      "title": "Pay premium for job hopping narrows to record low",
+      "publishedDate": "2026-02-18",
+      "accessedDate": "2026-07-24"
+    },
+    {
+      "sourceId": "SRC03",
+      "url": "https://www.dallasfed.org/research/economics/2026/0526",
+      "publisher": "Federal Reserve Bank of Dallas",
+      "title": "Climbing the employment ladder tough when bottom rung is broken",
+      "publishedDate": "2026-05",
+      "accessedDate": "2026-07-24"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "C01",
+      "claim": "The Atlanta Fed's Wage Growth Tracker shows median wage growth for job switchers rose to 4.1% in June 2026, versus 3.4% for job stayers.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C02",
+      "claim": "At the April 2022 peak of the Great Resignation, job switchers saw median raises of 16%, per ADP data.",
+      "sourceId": "SRC02",
+      "verified": true
+    },
+    {
+      "claimId": "C03",
+      "claim": "By early 2026 the pay premium for job hopping had narrowed to a record low.",
+      "sourceId": "SRC02",
+      "verified": true
+    },
+    {
+      "claimId": "C04",
+      "claim": "The wage premium for job switchers rebounded significantly through the first quarter of 2026.",
+      "sourceId": "SRC03",
+      "verified": true
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "statistic",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "In 2022, changing jobs paid a sixteen percent raise. Then the premium died. This year, it came back.",
+      "claims": [
+        "C02"
+      ],
+      "visual": {
+        "eyebrow": "CAREERS · PAY",
+        "statistic": "16",
+        "statisticSuffix": "%",
+        "headline": "The raise you only get by leaving."
+      },
+      "visualAssets": [
+        {
+          "assetId": "A01",
+          "role": "context",
+          "kind": "stock_media",
+          "rightsStatus": "permission_verified",
+          "file": "assets/S01-backdrop.mp4",
+          "treatment": "hero",
+          "editorialPurpose": "Hero footage arus komuter kota untuk hook - menggambarkan pasar tenaga kerja yang terus bergerak",
+          "licenseUrl": "https://www.pexels.com/license/",
+          "fetch": {
+            "provider": "pexels",
+            "type": "video",
+            "query": "crowded city crosswalk commuters walking"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "The Atlanta Fed tracks real paychecks, month after month. In June, pay for job switchers grew 4.1 percent. For stayers? 3.4.",
+      "claims": [
+        "C01"
+      ],
+      "visual": {
+        "eyebrow": "WHAT THE DATA SAYS",
+        "value": 4.1,
+        "decimals": 1,
+        "suffix": "%",
+        "label": "median wage growth for job switchers",
+        "source": "SOURCE · ATLANTA FED WAGE GROWTH TRACKER",
+        "subtitle": "Job stayers grew just 3.4%. June 2026."
+      }
+    },
+    {
+      "id": "S03",
+      "role": "context",
+      "type": "timeline",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "stacked_build",
+      "narration": "That premium isn't a law of nature. It peaked in the Great Resignation, collapsed to a record low, then flipped back this year. Timing is the whole game.",
+      "claims": [
+        "C02",
+        "C03",
+        "C04"
+      ],
+      "visual": {
+        "eyebrow": "THE PATTERN",
+        "headline": "The switcher premium keeps moving.",
+        "events": [
+          {
+            "marker": "APR 2022",
+            "label": "Peak: 16% median raises for job switchers"
+          },
+          {
+            "marker": "2024-25",
+            "label": "Premium narrows to a record low - loyalty briefly catches up"
+          },
+          {
+            "marker": "Q1 2026",
+            "label": "Premium rebounds: 4.1% vs 3.4% by June"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S04",
+      "role": "correction",
+      "type": "correction",
+      "variant": "reframe",
+      "surface": "dark",
+      "motion": "sharp_correction",
+      "narration": "So the lesson isn't 'always quit.' Loyalty is not a pay strategy. Leverage is - and new-hire pay reprices fast, while yours waits for review season.",
+      "visual": {
+        "eyebrow": "THE REAL LESSON",
+        "misconception": "LOYALTY",
+        "correction": "LEVERAGE",
+        "subtitle": "New-hire pay reprices fast. Incumbent pay lags."
+      }
+    },
+    {
+      "id": "S05",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "question",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "Same desk. Same effort. A different paycheck, depending on timing. Your salary has a market price. When did you last check it?",
+      "visual": {
+        "eyebrow": "THE QUESTION",
+        "setup": "Your salary has a market price.",
+        "outcome": "LEVERAGE",
+        "comparison": "> LOYALTY",
+        "question": "WHEN DID YOU LAST CHECK?",
+        "subtitle": "Check the market before review season does."
+      }
+    },
+    {
+      "id": "S06",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Know your market price."
+      }
+    }
+  ],
+  "packaging": {
+    "youtubeTitle": "Job Switchers Out-Earn Loyal Employees Again - Fed Data Explains",
+    "instagramCaption": "The 'loyalty tax' is back. 💸\n\nAtlanta Fed data, June 2026: pay for job SWITCHERS grew 4.1% - stayers got just 3.4%.\n\nThe timeline matters —\n\n🔸 2022: switchers peaked at 16% median raises\n🔸 2024-25: the premium collapsed to a record low\n🔸 2026: it's back\n\nThe lesson isn't 'always quit.' It's that new-hire pay reprices fast while incumbent pay lags. Loyalty is not a pay strategy - leverage is.\n\nWhen did you last check your market price? 👇\n\nSource: Federal Reserve Bank of Atlanta, Wage Growth Tracker\n\n#careeradvice #salary #jobmarket #negotiation #careertips #worklife #moneytalk #payraise #careergrowth",
+    "tiktokCaption": "The raise you only get by leaving 👀 Job switchers: 4.1%. Stayers: 3.4%. (Source: Atlanta Fed Wage Growth Tracker, June 2026)\n\n#careertok #salary #jobmarket #negotiation #learnontiktok #corporatelife #moneytok #careeradvice",
+    "hashtags": [
+      "careers",
+      "salary",
+      "jobmarket",
+      "negotiation",
+      "leverage"
+    ]
+  }
+}
