@@ -1,0 +1,202 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "Seed_002",
+  "title": "Why Expensive Products Can Be Cheaper Than Subscriptions",
+  "status": "draft",
+  "accountPhase": "warmup",
+  "contentOrigin": "original",
+  "pillar": "money_everyday_economics",
+  "formatFamily": "big_idea_explainer",
+  "voice": "af_heart,af_kore",
+  "musicLane": "money_people_decisions",
+  "campaign": null,
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
+  "sources": [
+    {
+      "sourceId": "SRC01",
+      "url": "https://www.crresearch.com/blog/subscription-service-statistics-and-costs/",
+      "publisher": "C+R Research",
+      "title": "Subscription Service Statistics and Costs",
+      "publishedDate": "2022",
+      "accessedDate": "2026-07-22"
+    },
+    {
+      "sourceId": "SRC02",
+      "url": "https://www.aeaweb.org/articles?id=10.1257/aer.96.3.694",
+      "publisher": "American Economic Review",
+      "title": "Paying Not to Go to the Gym",
+      "publishedDate": "2006",
+      "accessedDate": "2026-07-22"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "C01",
+      "claim": "Consumers estimated their monthly subscription spending at 86 dollars, but itemized actual spending averaged 219 dollars, more than 2.5 times higher.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C02",
+      "claim": "42 percent of consumers have forgotten they were still being charged for a subscription they no longer use.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C03",
+      "claim": "Gym members on flat monthly fees over 70 dollars attended on average 4.3 times per month, paying more than 17 dollars per expected visit versus a 10 dollar pay-per-visit option.",
+      "sourceId": "SRC02",
+      "verified": true
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "statistic",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "Most people guess they spend eighty six dollars a month on subscriptions. The real number is two hundred nineteen.",
+      "claims": ["C01"],
+      "visual": {
+        "eyebrow": "MONEY · EVERYDAY ECONOMICS",
+        "statistic": "$219",
+        "statisticSuffix": "A MONTH",
+        "headline": "Subscriptions feel cheap. They are not.",
+        "highlightedIndex": 0
+      },
+      "visualSystem": {
+        "lane": "object_metaphor",
+        "density": "editorial",
+        "seed": "receipt-stack",
+        "material": "paper"
+      }
+    },
+    {
+      "id": "S02",
+      "role": "correction",
+      "type": "correction",
+      "variant": "equation",
+      "surface": "light",
+      "motion": "sharp_correction",
+      "narration": "A big price tag hurts once. A small monthly charge never hurts. So your brain stops counting it.",
+      "visual": {
+        "eyebrow": "THE MISREAD",
+        "misconception": "FEELS CHEAP",
+        "correction": "COSTS LESS",
+        "symbol": "≠",
+        "subtitle": "Pain at checkout is information."
+      },
+      "visualSystem": {
+        "lane": "editorial_collage",
+        "density": "editorial",
+        "seed": "price-tags",
+        "material": "halftone"
+      }
+    },
+    {
+      "id": "S03",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "stacked_build",
+      "narration": "When researchers made people list every subscription, real spending was two and a half times their estimate. Forty two percent were still paying for something they forgot.",
+      "claims": ["C01", "C02"],
+      "visual": {
+        "eyebrow": "WHAT THE DATA SAYS",
+        "value": 2.5,
+        "decimals": 1,
+        "suffix": "×",
+        "label": "actual subscription spending versus what people estimate",
+        "source": "SOURCE · C+R RESEARCH, SUBSCRIPTION STATISTICS"
+      },
+      "visualSystem": {
+        "lane": "evidence_desk",
+        "density": "dense",
+        "seed": "subscription-audit",
+        "material": "scan",
+        "device": "evidence_scan"
+      }
+    },
+    {
+      "id": "S04",
+      "role": "comparison",
+      "type": "comparison",
+      "variant": "split",
+      "surface": "light",
+      "motion": "left_to_right",
+      "narration": "In one famous study, gym members on flat fees paid seventeen dollars a visit, when pay per visit cost ten. Predictable felt cheaper. It was not.",
+      "claims": ["C03"],
+      "visual": {
+        "eyebrow": "THE GYM TEST",
+        "leftLabel": "FLAT MONTHLY FEE",
+        "leftValue": "$17 / VISIT",
+        "rightLabel": "PAY PER VISIT",
+        "rightValue": "$10 / VISIT",
+        "verdict": "The safe-feeling option cost 70 percent more."
+      },
+      "visualSystem": {
+        "lane": "diagram_world",
+        "density": "editorial",
+        "seed": "gym-fork",
+        "material": "grid",
+        "device": "decision_graph"
+      }
+    },
+    {
+      "id": "S05",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "statement",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "Expensive things feel expensive once. Subscriptions are designed to feel like nothing. The real risk is the cost you never notice.",
+      "visual": {
+        "eyebrow": "THE REAL PRICE",
+        "setup": "One visible cost. Or a quiet drip.",
+        "outcome": "VISIBLE COST",
+        "comparison": "vs INVISIBLE DRIP",
+        "question": "DO YOU KNOW WHAT YOU PAY EACH MONTH?"
+      },
+      "visualSystem": {
+        "lane": "data_theatre",
+        "density": "editorial",
+        "seed": "drip-total",
+        "material": "grain",
+        "device": "priority_signal"
+      }
+    },
+    {
+      "id": "S06",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Count the quiet costs."
+      },
+      "visualSystem": {
+        "lane": "editorial_type",
+        "density": "quiet",
+        "seed": "closing-card",
+        "material": "paper"
+      }
+    }
+  ],
+  "packaging": {
+    "youtubeTitle": "Why a Big One-Time Purchase Can Be Cheaper Than Your Subscriptions",
+    "instagramCaption": "People estimate they spend 86 dollars a month on subscriptions. The itemized reality averages 219 — over 2.5x more. Big price tags hurt once; recurring charges are designed not to hurt at all. Sources: C+R Research; DellaVigna & Malmendier, American Economic Review. #money #subscriptions #personalfinance #economics",
+    "tiktokCaption": "You guess 86 dollars. You actually pay 219. Subscriptions are built to be forgotten. #money #subscriptions #personalfinance",
+    "hashtags": ["money", "subscriptions", "personalfinance", "economics", "spending"]
+  }
+}

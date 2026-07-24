@@ -1,0 +1,170 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "Seed_001",
+  "title": "AI Will Transform Jobs, Not Simply Replace Them",
+  "status": "draft",
+  "accountPhase": "warmup",
+  "contentOrigin": "original",
+  "pillar": "ai_technology_work",
+  "formatFamily": "big_idea_explainer",
+  "voice": "af_heart,af_kore",
+  "musicLane": "technology_change",
+  "campaign": null,
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
+  "sources": [
+    {
+      "sourceId": "SRC01",
+      "url": "https://www.ilo.org/publications/generative-ai-and-jobs-refined-global-index-occupational-exposure",
+      "publisher": "International Labour Organization",
+      "title": "Generative AI and Jobs: A Refined Global Index of Occupational Exposure",
+      "publishedDate": "2025",
+      "accessedDate": "2026-07-22"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "C01",
+      "claim": "Globally, one in four workers is in an occupation with some exposure to generative AI.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C02",
+      "claim": "Only 3.3% of global employment falls into the highest exposure category.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C03",
+      "claim": "Because most occupations contain tasks requiring human input, the ILO concludes job transformation is the most likely impact, not replacement.",
+      "sourceId": "SRC01",
+      "verified": true
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "statistic",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "AI could affect one in four workers worldwide. But that does not mean one in four jobs will disappear.",
+      "claims": [
+        "C01"
+      ],
+      "visual": {
+        "eyebrow": "AI · WORK",
+        "statistic": "1 IN 4",
+        "statisticSuffix": "WORKERS",
+        "headline": "AI will touch your job — not how you think",
+        "highlightedIndex": 1
+      }
+    },
+    {
+      "id": "S02",
+      "role": "correction",
+      "type": "correction",
+      "variant": "equation",
+      "surface": "light",
+      "motion": "sharp_correction",
+      "narration": "Exposure is not replacement. A job is a bundle of tasks — and AI only touches some of them.",
+      "visual": {
+        "eyebrow": "THE MISREAD",
+        "misconception": "EXPOSURE",
+        "correction": "REPLACEMENT",
+        "symbol": "≠",
+        "subtitle": "A job is a bundle of tasks. AI touches only some."
+      }
+    },
+    {
+      "id": "S03",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "The ILO measured it. Only 3.3 percent of global employment sits in the highest exposure category.",
+      "claims": [
+        "C02"
+      ],
+      "visual": {
+        "eyebrow": "WHAT THE DATA SAYS",
+        "value": 3.3,
+        "decimals": 1,
+        "suffix": "%",
+        "label": "of global employment in the highest exposure category",
+        "source": "SOURCE · ILO, GENERATIVE AI AND JOBS",
+        "subtitle": "Some exposure is common. Full exposure is rare."
+      }
+    },
+    {
+      "id": "S04",
+      "role": "comparison",
+      "type": "comparison",
+      "variant": "split",
+      "surface": "light",
+      "motion": "left_to_right",
+      "narration": "So the real split is not jobs that stay versus jobs that vanish. It is tasks AI absorbs... versus tasks that still need human judgment.",
+      "claims": [
+        "C03"
+      ],
+      "visual": {
+        "eyebrow": "THE SPLIT",
+        "leftLabel": "AI ABSORBS",
+        "leftValue": "ROUTINE",
+        "rightLabel": "HUMANS KEEP",
+        "rightValue": "JUDGMENT",
+        "verdict": "Jobs transform. They rarely vanish.",
+        "subtitle": "Most occupations still contain human-input tasks."
+      }
+    },
+    {
+      "id": "S05",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "statement",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "So the real career risk is not AI taking your job. It is your job changing faster than your skills.",
+      "visual": {
+        "eyebrow": "THE REAL RISK",
+        "setup": "Jobs will not vanish. They will be rewritten.",
+        "outcome": "SKILLS",
+        "comparison": "vs CHANGE",
+        "question": "CAN YOUR SKILLS KEEP UP?",
+        "subtitle": "Transformation rewards those who adapt first."
+      }
+    },
+    {
+      "id": "S06",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Keep up with the change."
+      }
+    }
+  ],
+  "packaging": {
+    "youtubeTitle": "AI May Change 1 in 4 Workers' Jobs — But Not How You Think",
+    "instagramCaption": "One in four workers is in an occupation with some exposure to generative AI — but exposure is not the same as replacement. The ILO's task-level research points to transformation, not job loss. The real question: can your skills keep up? Source: ILO, Generative AI and Jobs. #futureofwork #ai #careers #jobmarket",
+    "tiktokCaption": "AI exposure does not automatically mean job loss. The bigger shift is what your job asks you to do next. #futureofwork #ai #careers",
+    "hashtags": [
+      "ai",
+      "futureofwork",
+      "careers",
+      "jobs",
+      "work"
+    ]
+  }
+}

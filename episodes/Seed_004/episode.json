@@ -1,0 +1,209 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "Seed_004",
+  "title": "The 62% Gap - Same Job, Different Paycheck",
+  "status": "draft",
+  "accountPhase": "warmup",
+  "contentOrigin": "original",
+  "pillar": "ai_technology_work",
+  "formatFamily": "data_brief",
+  "voice": "af_heart,af_kore",
+  "musicLane": "money_people_decisions",
+  "campaign": null,
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
+  "sources": [
+    {
+      "sourceId": "SRC01",
+      "url": "https://www.pwc.com/gx/en/services/ai/ai-jobs-barometer.html",
+      "publisher": "PwC",
+      "title": "2026 Global AI Jobs Barometer",
+      "publishedDate": "2026",
+      "accessedDate": "2026-07-23"
+    },
+    {
+      "sourceId": "SRC02",
+      "url": "https://www.pwc.com/gx/en/news-room/press-releases/2026/pwc-2026-ai-jobs-barometer.html",
+      "publisher": "PwC",
+      "title": "PwC 2026 Global AI Jobs Barometer - press release",
+      "publishedDate": "2026",
+      "accessedDate": "2026-07-23"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "C01",
+      "claim": "PwC's 2026 Global AI Jobs Barometer analysed more than one billion job ads across six continents.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C02",
+      "claim": "Workers with AI skills command an average wage premium of 62%, up from 57% last year.",
+      "sourceId": "SRC02",
+      "verified": true
+    },
+    {
+      "claimId": "C03",
+      "claim": "The AI skills wage premium runs as high as 118% in sectors such as consumer markets.",
+      "sourceId": "SRC02",
+      "verified": true
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "statistic",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "Two people. Same job title. One earns 62% more.",
+      "visual": {
+        "eyebrow": "AI · SALARY",
+        "statistic": "62",
+        "statisticSuffix": "%",
+        "headline": "Same job. Not the same paycheck."
+      },
+      "visualAssets": [
+        {
+          "assetId": "A01",
+          "role": "context",
+          "kind": "stock_media",
+          "rightsStatus": "permission_verified",
+          "file": "assets/S01-backdrop.mp4",
+          "treatment": "hero",
+          "editorialPurpose": "Hero footage pekerja kantor untuk hook - mendukung klaim gap 62% di dunia kerja nyata",
+          "licenseUrl": "https://www.pexels.com/license/",
+          "fetch": {
+            "provider": "pexels",
+            "type": "video",
+            "query": "busy office workers typing laptop documents"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "PwC just analyzed nearly a billion job ads. The difference isn't experience.",
+      "claims": [
+        "C01",
+        "C02"
+      ],
+      "visual": {
+        "eyebrow": "WHAT THE DATA SAYS",
+        "value": 62,
+        "decimals": 0,
+        "suffix": "%",
+        "label": "higher pay for workers who command AI",
+        "source": "SOURCE · PWC AI JOBS BAROMETER 2026",
+        "subtitle": "From more than 1 billion job ads worldwide."
+      }
+    },
+    {
+      "id": "S03",
+      "role": "comparison",
+      "type": "comparison",
+      "variant": "split",
+      "surface": "light",
+      "motion": "left_to_right",
+      "narration": "AI is splitting every job into two tracks. One track just uses AI. Those wages are stalling.",
+      "visual": {
+        "eyebrow": "THE SPLIT",
+        "leftLabel": "USES AI",
+        "leftValue": "STALLING",
+        "rightLabel": "COMMANDS AI",
+        "rightValue": "+62%",
+        "verdict": "Same title. Two different futures.",
+        "subtitle": "One track is replaceable. One is not."
+      },
+      "visualAssets": [
+        {
+          "assetId": "A01",
+          "role": "context",
+          "kind": "stock_media",
+          "rightsStatus": "permission_verified",
+          "file": "assets/S03-backdrop.mp4",
+          "treatment": "backdrop",
+          "editorialPurpose": "Backdrop halus scene perbandingan - mendukung klaim premi gaji 62% bagi pekerja yang belajar skill AI",
+          "licenseUrl": "https://www.pexels.com/license/",
+          "fetch": {
+            "provider": "pexels",
+            "type": "video",
+            "query": "person taking notes laptop studying online course"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S04",
+      "role": "correction",
+      "type": "correction",
+      "variant": "equation",
+      "surface": "dark",
+      "motion": "sharp_correction",
+      "narration": "The other track commands AI. Judgment, not just prompts. In some industries, that premium hits 118%.",
+      "claims": [
+        "C03"
+      ],
+      "visual": {
+        "eyebrow": "THE REAL GAP",
+        "misconception": "CODING",
+        "correction": "JUDGMENT",
+        "symbol": "≠",
+        "subtitle": "In some industries the premium hits 118%."
+      }
+    },
+    {
+      "id": "S05",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "question",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "Same title on paper. Completely different paycheck. So if two people share your job title... which one are you?",
+      "visual": {
+        "eyebrow": "THE QUESTION",
+        "setup": "Same title on paper.",
+        "outcome": "JUDGMENT",
+        "comparison": "> OUTPUT",
+        "question": "WHICH ONE ARE YOU?",
+        "subtitle": "The gap isn't experience. It's judgment."
+      }
+    },
+    {
+      "id": "S06",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Command the machine. Own the premium."
+      }
+    }
+  ],
+  "packaging": {
+    "youtubeTitle": "Same Job Title. 62% More Pay. Here's the Skill Gap.",
+    "instagramCaption": "Same job title. 62% more pay. 🤯\n\nPwC just analyzed more than a BILLION job ads. The finding: AI is splitting every career into two tracks —\n\n🔸 Track 1 uses AI for routine work → wages stalling\n🔸 Track 2 commands AI with judgment → wages up 62% (118% in some industries)\n\nThe gap isn't experience. It isn't even coding. It's judgment.\n\nWhich track are you on? 👇\n\nSource: PwC 2026 Global AI Jobs Barometer\n\n#careeradvice #artificialintelligence #futureofwork #salarytransparency #careertips #worklife #ai #moneytalk #businesstips #careergrowth",
+    "tiktokCaption": "Same job title. 62% more pay. The gap isn't what you think 👀 (Source: PwC 2026 Global AI Jobs Barometer)\n\n#careertok #ai #salary #futureofwork #learnontiktok #corporatelife #moneytok #careeradvice",
+    "hashtags": [
+      "ai",
+      "careers",
+      "salary",
+      "futureofwork",
+      "judgment"
+    ]
+  }
+}
