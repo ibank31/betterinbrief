@@ -98,7 +98,7 @@ const EpisodeScene: React.FC<{
     world.media = world.media ?? {
       src: "assets/" + episodeId + "/" + mediaBase,
       kind: (/\.(mp4|webm|mov)$/i).test(mediaBase) ? "video" : "image",
-      treatment: assetEntry.treatment === "hero" ? "hero" : "backdrop",
+      treatment: assetEntry?.treatment === "hero" ? "hero" : "backdrop",
     };
   }
   switch (scene.type) {
