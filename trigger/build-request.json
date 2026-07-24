@@ -1,6 +1,6 @@
 {
   "episode": "SmokeTest_000",
   "requestedBy": "RadjaAgent",
-  "reason": "smoke v1.6a SFX sintetis whoosh-tick-impact",
-  "at": "2026-07-24T15:56:40Z"
+  "reason": "reproduksi kegagalan v1.6a dengan pelaporan log ke D1",
+  "at": "2026-07-24T16:05:30Z"
 }

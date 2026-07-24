@@ -88,7 +88,13 @@ jobs:
         run: node app/cli/binb.mjs lock "$EPISODE"
 
       - name: Build penuh
-        run: node app/cli/binb.mjs build "$EPISODE"
+        run: |
+          set -o pipefail
+          node app/cli/binb.mjs build "$EPISODE" 2>&1 | tee build.log
+
+      - name: Laporkan log gagal ke D1
+        if: failure()
+        run: node tools/report-failure.mjs
 
       - name: Upload video matang
         uses: actions/upload-artifact@v4
