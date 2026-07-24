@@ -1,0 +1,59 @@
+name: BinB Smoke
+on:
+  workflow_dispatch:
+
+jobs:
+  smoke:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 40
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Chromium alias untuk Remotion
+        run: sudo ln -sf "$(command -v google-chrome)" /usr/bin/chromium
+
+      - name: Composition listing (Remotion headless)
+        run: npm run compositions
+
+      - name: Cache Kokoro venv + model
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.binb/kokoro-venv
+            ~/.cache/huggingface
+          key: kokoro-linux-v1
+
+      - name: Install Kokoro TTS
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q espeak-ng
+          if [ ! -x "$HOME/.binb/kokoro-venv/bin/python" ]; then
+            python3 -m venv "$HOME/.binb/kokoro-venv"
+            "$HOME/.binb/kokoro-venv/bin/pip" install --upgrade pip
+            "$HOME/.binb/kokoro-venv/bin/pip" install torch --index-url https://download.pytorch.org/whl/cpu
+            "$HOME/.binb/kokoro-venv/bin/pip" install "kokoro==0.7.16" soundfile || "$HOME/.binb/kokoro-venv/bin/pip" install kokoro soundfile
+          fi
+
+      - name: TTS smoke voice produksi
+        run: |
+          . "$HOME/.binb/kokoro-venv/bin/activate"
+          python scripts/kokoro_tts.py --text "Better in Brief cloud factory is alive. Same job, not the same paycheck." --voice "af_heart,af_kore" --speed 1.0 --out /tmp/tts-smoke.wav
+          ffprobe -v error -show_entries format=duration -of default=nw=1 /tmp/tts-smoke.wav
+
+      - name: Upload bukti suara
+        uses: actions/upload-artifact@v4
+        with:
+          name: tts-smoke
+          path: /tmp/tts-smoke.wav
