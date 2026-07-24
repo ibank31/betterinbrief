@@ -119,7 +119,7 @@ export function buildFingerprint(locked) {
 async function d1Query(ledgerCfg, sql, params) {
   const token = process.env[ledgerCfg.apiTokenEnv];
   if (!token) return {skipped: true, reason: `env ${ledgerCfg.apiTokenEnv} tidak diisi (repo secret belum ada)`};
-  const url = `https://api.cloudflare.com/client/v4/accounts/${ledgerCfg.accountId}/d1/database/${ledgerCfg.databaseId}/query`;
+  const url = "https://api.cloudflare.com/client/v4/accounts/" + ledgerCfg.accountId + "/d1/database/" + ledgerCfg.databaseId + "/query";
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), ledgerCfg.timeoutMs ?? 15000);
   try {
