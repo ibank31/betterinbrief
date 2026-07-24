@@ -112,7 +112,7 @@ async function cmdBuild(id, flags) {
   await stage("07-render", () => renderEpisode(id));
   await stage("08-mix", () => mixEpisode(id));
   await stage("09-encode", () => encodeEpisode(id));
-  const qc = await stage("10-12-qc", () => runQc(id)); // technical + visual + semantic
+  const qc = await stage("10-12-qc", () => runQc(id)); // technical + visual + semantic + variety
   const manifest = buildManifestFor(id, lockRes, stages);
   writeJson(path.join(P.work(id), "build-manifest.json"), manifest);
   const pack = await stage("13-14-package", () => packageEpisode(id, manifest));
@@ -174,7 +174,7 @@ async function cmdRemix(id) {
   console.log("\n== [remix-encode] ==");
   encodeEpisode(id);
   console.log("\n== [remix-qc] ==");
-  const qc = runQc(id);
+  const qc = await runQc(id);
   const manifest = buildManifestFor(id, {sha256: lockedCoreSha(locked)}, {note: "remix-only: existing visual render reused", remixAt: new Date().toISOString()});
   console.log("\n== [remix-package] ==");
   const pack = packageEpisode(id, manifest);
@@ -232,7 +232,7 @@ async function main() {
       } break;
       case "remix": if (!arg) fail("binb remix <episode-id>"); await cmdRemix(arg); break;
       case "qc": if (!arg) fail("binb qc <episode-id>"); {
-        const rep = runQc(arg);
+        const rep = await runQc(arg);
         console.log(fs.readFileSync(path.join(P.work(arg), "qc-summary.txt"), "utf8"));
         process.exit(rep.verdict === "PASS" ? 0 : 1);
       } break;
