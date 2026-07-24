@@ -55,6 +55,16 @@ const allowedVariants: Record<
     "reframe",
   ],
   closing_brand: ["standard"],
+  // v1.4a - tipe scene kamus baru: satu variant standar. Peta ini WAJIB
+  // diubah bersama config/scene-catalog.json, episodes/types.ts, dan
+  // scenes/registry.tsx setiap kali tipe scene bertambah (lihat komentar
+  // registry.tsx). Ketinggalan di sini pernah membuat run job-switch-premium
+  // gagal dengan TypeError 'includes' saat tipe timeline pertama dipakai.
+  timeline: ["standard"],
+  ranking: ["standard"],
+  before_after: ["standard"],
+  process: ["standard"],
+  quote: ["standard"],
 };
 
 export const getEpisodeDurationInFrames = (
@@ -233,10 +243,20 @@ export const validateEpisodeRenderProps = (
       );
     }
 
-    if (
-      !allowedVariants[scene.type].includes(
-        scene.variant,
-      )
+    const variants =
+      allowedVariants[scene.type] as
+        | readonly string[]
+        | undefined;
+
+    if (!variants) {
+      errors.push(
+        `Scene ${scene.id} type ` +
+          `${scene.type} is missing from ` +
+          "allowedVariants in episodes/runtime.ts " +
+          "(update it alongside scene-catalog.json).",
+      );
+    } else if (
+      !variants.includes(scene.variant)
     ) {
       errors.push(
         `Scene ${scene.id} variant ` +
