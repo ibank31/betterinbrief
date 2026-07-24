@@ -61,21 +61,27 @@ export function mixEpisode(id) {
 
   // Pass 3 (koreksi): loudnorm linear bisa berhenti di bawah target saat gain
   // dibatasi true peak ceiling. Materi dengan crest factor tinggi (VO jarang,
-  // puncak konsonan tajam — kasus SmokeTest) TIDAK bisa dinaikkan dengan gain
-  // + limiter saja: setiap dB gain langsung menabrak ceiling TP. Maka puncak
-  // diturunkan sungguhan dulu dengan kompresor (4:1 di atas -12 dBFS, attack
-  // cepat) SEBELUM limiter, sehingga gain punya ruang masuk. Episode penuh
-  // dengan narasi rapat biasanya lolos dari pass linear dan tidak pernah
-  // menyentuh pass ini. Jika sebuah pass ditolak, ulangi dengan gain
-  // setengahnya (backoff) alih-alih langsung menyerah.
+  // puncak konsonan tajam — kasus SmokeTest) tidak bisa dinaikkan sekali gain
+  // besar: limiter harus memotong terlalu dalam dan TP guard menolak.
+  // Kompresor 4:1 pre-limiter (v3) terbukti GAGAL di run #10: attack 4 ms
+  // meloloskan puncak transien tetapi meremuk badan sinyal ~3.6 LU tanpa
+  // makeup — tiap pass justru LEBIH PELAN dari input dan crest factor malah
+  // naik. Solusi v4: gain BERTAHAP maksimum 2.5 dB per pass; limiter (margin
+  // 0.7 dB di bawah ceiling TP untuk overshoot inter-sample) hanya mencukur
+  // transien tipis di tiap tahap sehingga badan sinyal menerima gain penuh.
+  // Pass yang diterima menjadi basis pass berikutnya. Jika sebuah pass
+  // ditolak, ulangi dengan gain setengahnya (backoff). Episode penuh dengan
+  // narasi rapat biasanya lolos dari pass linear dan tidak menyentuh pass ini.
   let backoff = 1;
+  const maxStepDb = 2.5;
   for (let i = 0; i < 8 && Math.abs(outI - targetI) > tol * 0.75; i++) {
-    const gainDb = +((targetI - outI) * backoff).toFixed(2);
+    const rawGainDb = (targetI - outI) * backoff;
+    const gainDb = +(Math.sign(rawGainDb) * Math.min(Math.abs(rawGainDb), maxStepDb)).toFixed(2);
     if (Math.abs(gainDb) < 0.2) break;
     const limit = Math.pow(10, (audioCfg.truePeakMaxDbtp - 0.7) / 20);
     const corrected = path.join(mixDir, "mixed-audio.corrected.wav");
     runOk("ffmpeg", ["-y", "-v", "error", "-i", final,
-      "-af", `volume=${gainDb}dB,acompressor=threshold=0.25:ratio=4:attack=4:release=120,alimiter=limit=${limit.toFixed(4)}:attack=5:release=100:level=false`,
+      "-af", `volume=${gainDb}dB,alimiter=limit=${limit.toFixed(4)}:attack=5:release=100:level=false`,
       "-ar", String(audioCfg.sampleRate), "-ac", String(audioCfg.channels), "-c:a", "pcm_s24le", corrected]);
     const pm = run("ffmpeg", ["-i", corrected, "-af", `loudnorm=${target}:print_format=json`, "-f", "null", "-"]);
     const meas2 = parseLoudnorm(pm.stderr);
