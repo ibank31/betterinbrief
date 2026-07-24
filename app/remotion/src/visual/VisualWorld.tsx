@@ -48,13 +48,15 @@ export const defaultVisualWorld = (
 ): VisualWorldSpec => {
   const lanes = laneOptionsByType[type] ?? ["editorial_collage"];
   const devices = deviceOptionsByType[type] ?? [];
-  const key = variationKey ?? sceneId;
+  // v1.3a: kunci variasi menggabungkan episode + scene agar tidak ada geometri/lane/device
+  // yang berulang antar episode (sceneId selalu S01..S06) maupun antar scene setipe dalam satu episode.
+  const key = variationKey !== undefined && variationKey !== "" ? variationKey + ":" + sceneId : sceneId;
   const lane = lanes[hashKey(key + ":lane:" + type) % lanes.length] ?? "editorial_collage";
   const device = devices.length > 0 ? devices[hashKey(key + ":device:" + type) % devices.length] : undefined;
   const world: VisualWorldSpec = {
     lane,
     density: laneDefaults[lane].density,
-    seed: sceneId,
+    seed: key,
     material: laneDefaults[lane].material,
   };
   if (device !== undefined) world.device = device;
@@ -122,10 +124,11 @@ const DiagramMarks: React.FC<{seed: string; ink: string; accent: string}> = ({se
 const InterfaceMarks: React.FC<{seed: string; ink: string; accent: string}> = ({seed, ink, accent}) => {
   const frame = useCurrentFrame();
   const scan = (frame % 150) / 150;
+  const label = (seed.split(":").pop() ?? seed).toUpperCase();
   return <>
     {[0, 1, 2].map((index) => <div key={index} style={{position: "absolute", right: 40 + index * 40, top: 280 + index * 155, width: 330, height: 118, border: `2px solid ${ink}`, opacity: 0.38, transform: `translateX(${index % 2 ? 20 : 0}px)`}} />)}
     <div style={{position: "absolute", right: 80, top: 350 + scan * 750, width: 310, height: 4, background: accent, opacity: 0.5}} />
-    <div style={{position: "absolute", left: 74, bottom: 305, fontSize: 20, letterSpacing: 4, color: ink, fontWeight: 800}}>SIGNAL / {seed.toUpperCase()}</div>
+    <div style={{position: "absolute", left: 74, bottom: 305, fontSize: 20, letterSpacing: 4, color: ink, fontWeight: 800}}>SIGNAL / {label}</div>
   </>;
 };
 
