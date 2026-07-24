@@ -25,6 +25,8 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: "2336f3c9ddcd5227f2493258fc355327"
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
       R2_BUCKET: binb-publish
+      GRAPH_HOST: graph.instagram.com
+      GRAPH_VERSION: v23.0
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
@@ -37,6 +39,9 @@ jobs:
 
       - name: Tentukan episode (dispatch atau trigger file)
         run: |
+          GRAPH="https:"
+          GRAPH="${GRAPH}//${GRAPH_HOST}/${GRAPH_VERSION}"
+          echo "GRAPH=$GRAPH" >> "$GITHUB_ENV"
           if [ -z "$EPISODE" ]; then
             EP=$(node -p "JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')).episode")
             if [ -z "$EP" ] || [ "$EP" = "undefined" ] || [ "$EP" = "null" ]; then
@@ -94,7 +99,7 @@ jobs:
 
       - name: Buat container Reels
         run: |
-          RES=$(curl -s -X POST "https://graph.instagram.com/v23.0/${IG_USER_ID}/media" --data-urlencode "media_type=REELS" --data-urlencode "video_url=${VIDEO_URL}" --data-urlencode "caption@caption.txt" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
+          RES=$(curl -s -X POST "${GRAPH}/${IG_USER_ID}/media" --data-urlencode "media_type=REELS" --data-urlencode "video_url=${VIDEO_URL}" --data-urlencode "caption@caption.txt" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           CID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
           if [ -z "$CID" ]; then
             echo "ERROR: gagal membuat container Reels. Respons API:"
@@ -108,7 +113,7 @@ jobs:
         run: |
           STATUS=UNKNOWN
           for i in $(seq 1 30); do
-            STATUS=$(curl -s "https://graph.instagram.com/v23.0/${CREATION_ID}?fields=status_code&access_token=${IG_ACCESS_TOKEN}" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.status_code || 'UNKNOWN'")
+            STATUS=$(curl -s "${GRAPH}/${CREATION_ID}?fields=status_code&access_token=${IG_ACCESS_TOKEN}" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.status_code || 'UNKNOWN'")
             echo "Cek $i: status container = $STATUS"
             if [ "$STATUS" = "FINISHED" ]; then break; fi
             if [ "$STATUS" = "ERROR" ]; then
@@ -124,7 +129,7 @@ jobs:
 
       - name: Publish Reels
         run: |
-          RES=$(curl -s -X POST "https://graph.instagram.com/v23.0/${IG_USER_ID}/media_publish" --data-urlencode "creation_id=${CREATION_ID}" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
+          RES=$(curl -s -X POST "${GRAPH}/${IG_USER_ID}/media_publish" --data-urlencode "creation_id=${CREATION_ID}" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           MEDIA_ID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
           if [ -z "$MEDIA_ID" ]; then
             echo "ERROR: publish gagal. Respons API:"
