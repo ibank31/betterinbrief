@@ -1,6 +1,6 @@
 {
   "episode": "costco-hot-dog",
   "requestedBy": "RadjaAgent",
-  "reason": "Episode 3: Costco $1.50 hot dog - debut pilar company_founder_strategy, musicLane business_strategy, scene quote/before_after/process, 7 scene",
-  "at": "2026-07-24T17:52:00Z"
+  "reason": "Rebuild setelah fix: musicLane money_people_decisions (hindari fixture silent -> TP jebol) + narasi dipangkas ke ~56s (drift durasi)",
+  "at": "2026-07-24T18:14:30Z"
 }
