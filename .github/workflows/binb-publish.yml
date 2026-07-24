@@ -3,8 +3,10 @@ on:
   workflow_dispatch:
     inputs:
       episode:
-        description: Episode ID, contoh costco-hot-dog
+        description: Episode ID, contoh costco-hot-dog (langsung tayang, abaikan jadwal)
         required: true
+  schedule:
+    - cron: "5 22 * * *"
   push:
     branches:
       - main
@@ -16,7 +18,7 @@ jobs:
     runs-on: ubuntu-24.04
     timeout-minutes: 30
     permissions:
-      contents: read
+      contents: write
     env:
       EPISODE: ${{ inputs.episode }}
       IG_USER_ID: ${{ secrets.IG_USER_ID }}
@@ -37,24 +39,45 @@ jobs:
         with:
           node-version: 22
 
-      - name: Tentukan episode (dispatch atau trigger file)
+      - name: Tentukan episode, jadwal, dan status antrean
         run: |
           GRAPH="https:"
           GRAPH="${GRAPH}//${GRAPH_HOST}/${GRAPH_VERSION}"
           echo "GRAPH=$GRAPH" >> "$GITHUB_ENV"
-          if [ -z "$EPISODE" ]; then
-            EP=$(node -p "JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')).episode")
-            if [ -z "$EP" ] || [ "$EP" = "undefined" ] || [ "$EP" = "null" ]; then
-              echo "ERROR: trigger/publish-request.json tidak berisi field episode yang valid"
-              exit 1
-            fi
-            echo "EPISODE=$EP" >> "$GITHUB_ENV"
-            echo "Episode dari trigger file: $EP"
-          else
-            echo "Episode dari dispatch: $EPISODE"
+          if [ -n "$EPISODE" ]; then
+            echo "SOURCE=dispatch" >> "$GITHUB_ENV"
+            echo "Episode dari dispatch (langsung tayang): $EPISODE"
+            exit 0
           fi
+          echo "SOURCE=trigger" >> "$GITHUB_ENV"
+          if [ ! -f trigger/publish-request.json ]; then
+            echo "Tidak ada antrean publish. Selesai tanpa aksi."
+            echo "SKIP=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          EP=$(node -p "JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')).episode || ''")
+          DONE=$(node -p "JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')).done ? 'yes' : 'no'")
+          WAIT=$(node -p "const nb=JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')).notBefore; (nb && Date.now() < Date.parse(nb)) ? 'yes' : 'no'")
+          NB=$(node -p "JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')).notBefore || '-'")
+          if [ -z "$EP" ]; then
+            echo "ERROR: trigger/publish-request.json tidak berisi field episode yang valid"
+            exit 1
+          fi
+          if [ "$DONE" = "yes" ]; then
+            echo "Antrean $EP sudah pernah ditayangkan (done=true). Selesai tanpa aksi."
+            echo "SKIP=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          if [ "$WAIT" = "yes" ]; then
+            echo "Antrean $EP belum jatuh tempo (notBefore=$NB). Menunggu cron berikutnya."
+            echo "SKIP=true" >> "$GITHUB_ENV"
+            exit 0
+          fi
+          echo "EPISODE=$EP" >> "$GITHUB_ENV"
+          echo "Episode dari antrean: $EP (notBefore=$NB, jatuh tempo)"
 
       - name: Validasi prasyarat
+        if: env.SKIP != 'true'
         run: |
           MISSING=""
           [ -z "$IG_USER_ID" ] && MISSING="$MISSING IG_USER_ID(secret)"
@@ -67,6 +90,7 @@ jobs:
           echo "Prasyarat lengkap."
 
       - name: Unduh rilis matang terbaru
+        if: env.SKIP != 'true'
         run: |
           NUM=$(gh release list --limit 200 --json tagName --jq '.[].tagName' | grep -E "^bank-${EPISODE}-r[0-9]+$" | sed "s/^bank-${EPISODE}-r//" | sort -n | tail -1)
           if [ -z "$NUM" ]; then
@@ -85,11 +109,13 @@ jobs:
           echo "Rilis dipakai: $TAG -> $FILE"
 
       - name: Siapkan caption dari packaging episode
+        if: env.SKIP != 'true'
         run: |
           node -e "const p=require('./episodes/'+process.env.EPISODE+'/episode.json').packaging; if(!p||!p.instagramCaption){console.error('ERROR: packaging.instagramCaption tidak ada');process.exit(1)} require('fs').writeFileSync('caption.txt',p.instagramCaption)"
           echo "Caption siap ($(wc -c < caption.txt) byte)."
 
       - name: Upload video ke R2 (etalase publik)
+        if: env.SKIP != 'true'
         run: |
           KEY="${TAG}.mp4"
           npx --yes wrangler@3 r2 object put "${R2_BUCKET}/${KEY}" --file "$VIDEO_FILE" --remote
@@ -98,6 +124,7 @@ jobs:
           echo "Video tersedia di etalase R2 dengan key ${KEY}"
 
       - name: Buat container Reels
+        if: env.SKIP != 'true'
         run: |
           RES=$(curl -s -X POST "${GRAPH}/${IG_USER_ID}/media" --data-urlencode "media_type=REELS" --data-urlencode "video_url=${VIDEO_URL}" --data-urlencode "caption@caption.txt" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           CID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
@@ -110,6 +137,7 @@ jobs:
           echo "Container dibuat: $CID"
 
       - name: Tunggu container siap
+        if: env.SKIP != 'true'
         run: |
           STATUS=UNKNOWN
           for i in $(seq 1 30); do
@@ -128,6 +156,7 @@ jobs:
           fi
 
       - name: Publish Reels
+        if: env.SKIP != 'true'
         run: |
           RES=$(curl -s -X POST "${GRAPH}/${IG_USER_ID}/media_publish" --data-urlencode "creation_id=${CREATION_ID}" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           MEDIA_ID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
@@ -137,3 +166,12 @@ jobs:
             exit 1
           fi
           echo "SUKSES: Reels tayang. Media ID: $MEDIA_ID (episode $EPISODE, rilis $TAG)"
+
+      - name: Tandai antrean selesai (anti tayang ganda)
+        if: env.SKIP != 'true' && env.SOURCE == 'trigger'
+        run: |
+          node -e "const f='trigger/publish-request.json'; const t=JSON.parse(require('fs').readFileSync(f,'utf8')); t.done=true; t.publishedAt=new Date().toISOString(); require('fs').writeFileSync('done.json', JSON.stringify(t,null,2)+'\n')"
+          CONTENT=$(base64 -w0 done.json)
+          SHA=$(gh api "repos/${GITHUB_REPOSITORY}/contents/trigger/publish-request.json" --jq .sha)
+          gh api -X PUT "repos/${GITHUB_REPOSITORY}/contents/trigger/publish-request.json" -f message="publish done: ${EPISODE} [skip ci]" -f content="$CONTENT" -f sha="$SHA" > /dev/null
+          echo "Antrean ditandai done=true."
