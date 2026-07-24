@@ -1,6 +1,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import {P, SYSTEM_DIR, loadConfig, readJson, run, runOk, sha256File, writeJson, log} from "../cli/lib/util.mjs";
+import {renderSfxTrack} from "./sfx.mjs";
 
 function pickMusic(musicLane) {
   const laneDir = path.join(SYSTEM_DIR, "assets", "music", musicLane);
@@ -28,18 +29,31 @@ export function mixEpisode(id) {
   const workDir = P.work(id);
   const render = readJson(path.join(workDir, "render-manifest.json"));
   const music = pickMusic(readJson(path.join(workDir, "render-props.json")).musicLane);
+  // v1.6a: track SFX sintetis (whoosh/tick/impact) — null bila mati/tanpa event.
+  const sfx = renderSfxTrack(id);
   const mixDir = path.join(workDir, "mix");
   fs.mkdirSync(mixDir, {recursive: true});
 
   const draft = path.join(mixDir, "mix-draft.wav");
   const final = path.join(mixDir, "mixed-audio.wav");
   const duck = audioCfg.music.duck;
-  // Voice (dari mezzanine) + musik yang di-duck via sidechain.
-  const graph =
+  // Voice (dari mezzanine) + musik yang di-duck via sidechain + bus SFX yang
+  // juga di-duck oleh voice (ratio lebih lembut agar tick tetap terdengar).
+  const inputs = ["-i", render.mezzanine, "-stream_loop", "-1", "-i", music.file];
+  let graph =
     `[1:a]aloop=loop=-1:size=2e+09,volume=${audioCfg.music.baseGainDb}dB[m];` +
-    `[m][0:a]sidechaincompress=threshold=${duck.threshold}:ratio=${duck.ratio}:attack=${duck.attackMs}:release=${duck.releaseMs}[md];` +
-    `[0:a][md]amix=inputs=2:duration=first:normalize=0[out]`;
-  runOk("ffmpeg", ["-y", "-v", "error", "-i", render.mezzanine, "-stream_loop", "-1", "-i", music.file,
+    `[m][0:a]sidechaincompress=threshold=${duck.threshold}:ratio=${duck.ratio}:attack=${duck.attackMs}:release=${duck.releaseMs}[md];`;
+  if (sfx) {
+    const sduck = audioCfg.sfx.duck;
+    inputs.push("-i", sfx.track);
+    graph +=
+      `[2:a]volume=${audioCfg.sfx.busGainDb}dB[s];` +
+      `[s][0:a]sidechaincompress=threshold=${sduck.threshold}:ratio=${sduck.ratio}:attack=${sduck.attackMs}:release=${sduck.releaseMs}[sd];` +
+      `[0:a][md][sd]amix=inputs=3:duration=first:normalize=0[out]`;
+  } else {
+    graph += `[0:a][md]amix=inputs=2:duration=first:normalize=0[out]`;
+  }
+  runOk("ffmpeg", ["-y", "-v", "error", ...inputs,
     "-filter_complex", graph, "-map", "[out]",
     "-ar", String(audioCfg.sampleRate), "-ac", String(audioCfg.channels), "-c:a", "pcm_s24le", draft]);
 
@@ -113,6 +127,7 @@ export function mixEpisode(id) {
   const manifest = {
     episodeId: id, mixedAt: new Date().toISOString(),
     music: {file: music.file, fixture: music.fixture, sha256: sha256File(music.file), baseGainDb: audioCfg.music.baseGainDb, duck},
+    sfx: sfx ? {track: sfx.track, eventCount: sfx.manifest.eventCount, busGainDb: audioCfg.sfx.busGainDb, duck: audioCfg.sfx.duck, sha256: sfx.manifest.trackSha256} : null,
     loudness: {
       config: "config/audio.json",
       targetIntegratedLufs: audioCfg.integratedLoudnessTargetLufs,
@@ -123,6 +138,6 @@ export function mixEpisode(id) {
     mixedAudio: final, mixedAudioSha256: sha256File(final),
   };
   writeJson(path.join(workDir, "mix-manifest.json"), manifest);
-  log(`mix: ${id} selesai (I=${outI} LUFS, TP=${outTp} dBTP${music.fixture ? ", MUSIC=FIXTURE-SILENT" : ""})`);
+  log(`mix: ${id} selesai (I=${outI} LUFS, TP=${outTp} dBTP${sfx ? `, SFX=${sfx.manifest.eventCount} event` : ""}${music.fixture ? ", MUSIC=FIXTURE-SILENT" : ""})`);
   return manifest;
 }

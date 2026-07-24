@@ -15,6 +15,21 @@
       "releaseMs": 250
     }
   },
+  "sfx": {
+    "enabled": true,
+    "busGainDb": -14,
+    "eventGainDb": {
+      "whoosh": 0,
+      "impact": 0,
+      "tick": -5
+    },
+    "duck": {
+      "threshold": 0.05,
+      "ratio": 3,
+      "attackMs": 5,
+      "releaseMs": 180
+    }
+  },
   "voice": {
     "expectedSampleRate": 24000,
     "clippingPeakDbfs": -0.1,
