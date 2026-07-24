@@ -1,7 +1,7 @@
 import React from "react";
 import {interpolate, spring, useCurrentFrame, useVideoConfig} from "remotion";
 import {colors, motion, safeZones, typography} from "../brand/tokens";
-import {EditorialFrame, EditorialSubtitle, Eyebrow, SceneBaseProps, clamp} from "./shared";
+import {EditorialFrame, EditorialSubtitle, Eyebrow, SceneBaseProps, clamp, microBeat} from "./shared";
 import {NarrativeDevice} from "../visual/NarrativeDevice";
 
 export type HookSceneProps = SceneBaseProps & {
@@ -27,6 +27,9 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
     : statistic;
   // v1.3b: nilai asli statistik diteruskan ke device agar geometrinya jujur-data.
   const statValue = statMatch ? parseInt(statMatch[1], 10) : null;
+  // v1.3d: micro-beat — statistik berdenyut halus setelah count-up mendarat,
+  // pekerja bergoyang bergantian; tidak ada layout yang diam >2,5 dtk.
+  const beat = microBeat(frame, {start: 56, period: 78});
   const s = surface ?? "dark";
   const ink = s === "dark" ? colors.white : colors.black;
   const bg = s === "dark" ? colors.black : s === "orange" ? colors.orange : colors.warmWhite;
@@ -36,7 +39,7 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
     <NarrativeDevice kind={world?.device ?? "two_tracks"} surface={s} seed={world?.seed} data={statValue === null ? undefined : {values: [statValue], max: statisticSuffix.includes("%") ? 100 : undefined}} />
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 820}}>
       <Eyebrow color={eyebrowColor}>{eyebrow}</Eyebrow>
-      <div style={{display: "flex", alignItems: "baseline", marginTop: 64, transform: `translateY(${(1-hit)*42}px)`, opacity: hit}}>
+      <div style={{display: "flex", alignItems: "baseline", marginTop: 64, transform: `translateY(${(1-hit)*42}px) scale(${1 + beat * 0.02})`, transformOrigin: "left bottom", opacity: hit}}>
         <span style={{fontSize: 260, lineHeight: .82, fontWeight: typography.weight.black, letterSpacing: -12, color: accent}}>{displayStatistic}</span>
         <span style={{marginLeft: 26, fontSize: typography.size.display, lineHeight: 1, fontWeight: typography.weight.bold, letterSpacing: -3}}>{statisticSuffix}</span>
       </div>
@@ -47,6 +50,7 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
         const on = i === highlightedIndex;
         const workerColor = on ? accent : colors.gray700;
         const workerIn = interpolate(frame, [12 + i * 3, 22 + i * 3], [0, 1], clamp);
+        const bob = microBeat(frame, {start: 70, period: 78, phase: i * 6});
 
         return (
           <div
@@ -54,7 +58,7 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
             style={{
               width: 64,
               opacity: workerIn,
-              transform: `translateY(${(1 - workerIn) * 28 + (i % 2 ? 12 : 0)}px)`,
+              transform: `translateY(${(1 - workerIn) * 28 + (i % 2 ? 12 : 0) - bob * 6}px)`,
             }}
           >
             <div

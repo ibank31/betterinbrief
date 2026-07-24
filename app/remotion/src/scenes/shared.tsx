@@ -15,6 +15,24 @@ export const clamp = {
   extrapolateRight: "clamp" as const,
 };
 
+// v1.3d — Micro-beat: pulsa raised-cosine 0→1→0 selama `pulseFrames`,
+// berulang tiap `period` frame mulai `start` (+ `phase` untuk stagger antar
+// elemen). Dipakai scene untuk denyut transform-only kecil tiap ±2,5 detik
+// supaya tidak ada layout yang diam lama (temuan audit: static holds ±60%
+// durasi). Deterministik penuh — aman untuk render chunked — dan amplitudo
+// pemakaiannya wajib kecil (skala ≤1.03, geser ≤8px): motion melayani
+// konten, bukan menggantikannya.
+export const microBeat = (
+  frame: number,
+  {start = 52, period = 75, pulseFrames = 26, phase = 0}: {start?: number; period?: number; pulseFrames?: number; phase?: number} = {},
+): number => {
+  const local = frame - start - phase;
+  if (local < 0) return 0;
+  const t = local % period;
+  if (t >= pulseFrames) return 0;
+  return Math.sin((t / pulseFrames) * Math.PI);
+};
+
 export const EditorialFrame: React.FC<React.PropsWithChildren<{
   background?: string;
   color?: string;
