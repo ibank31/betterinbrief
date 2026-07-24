@@ -1,0 +1,75 @@
+name: BinB Build
+on:
+  workflow_dispatch:
+    inputs:
+      episode:
+        description: Episode ID, contoh Seed_004
+        required: true
+        default: SmokeTest_000
+
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      EPISODE: ${{ inputs.episode }}
+      PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
+      BINB_HOME: /home/runner/binb-home
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Paket sistem
+        run: |
+          sudo apt-get update -q
+          sudo apt-get install -y -q espeak-ng ffmpeg
+          sudo ln -sf "$(command -v google-chrome)" /usr/bin/chromium
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Cache Kokoro venv + model
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.binb/kokoro-venv
+            ~/.cache/huggingface
+          key: kokoro-linux-v1
+
+      - name: Install Kokoro TTS
+        run: |
+          if [ ! -x "$HOME/.binb/kokoro-venv/bin/python" ]; then
+            python3 -m venv "$HOME/.binb/kokoro-venv"
+            "$HOME/.binb/kokoro-venv/bin/pip" install --upgrade pip
+            "$HOME/.binb/kokoro-venv/bin/pip" install torch --index-url https://download.pytorch.org/whl/cpu
+            "$HOME/.binb/kokoro-venv/bin/pip" install "kokoro==0.7.16" soundfile || "$HOME/.binb/kokoro-venv/bin/pip" install kokoro soundfile
+          fi
+
+      - name: Siapkan BINB_HOME dan kunci aset
+        run: |
+          mkdir -p "$BINB_HOME/tools"
+          cp -r episodes "$BINB_HOME/episodes"
+          printf '{"pexelsApiKey":"%s"}' "$PEXELS_API_KEY" > tools/assets-keys.json
+          cp tools/assets-keys.json "$BINB_HOME/tools/assets-keys.json"
+
+      - name: Fetch aset media
+        run: node tools/assets-fetch.mjs "$EPISODE"
+
+      - name: Lock episode
+        run: node app/cli/binb.mjs lock "$EPISODE"
+
+      - name: Build penuh
+        run: node app/cli/binb.mjs build "$EPISODE"
+
+      - name: Upload video matang
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.episode }}-publish
+          path: /home/runner/binb-home/publish/**
+          if-no-files-found: error
+          retention-days: 14
