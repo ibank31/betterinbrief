@@ -19,13 +19,7 @@ import type {
   VisualWorldSpec,
 } from "../episodes/types";
 import {CaptionOverlay} from "../scenes/CaptionOverlay";
-import {ClosingBrandScene} from "../scenes/ClosingBrandScene";
-import {ComparisonScene} from "../scenes/ComparisonScene";
-import {CorrectionScene} from "../scenes/CorrectionScene";
-import {DataProofScene} from "../scenes/DataProofScene";
-import {HookScene} from "../scenes/HookScene";
-import {OutcomeScene} from "../scenes/OutcomeScene";
-import {TaskBreakdownScene} from "../scenes/TaskBreakdownScene";
+import {renderScene} from "../scenes/registry";
 import {
   VariantSceneFrame,
 } from "../episodes/VariantSceneFrame";
@@ -126,6 +120,9 @@ const SceneKinetics: React.FC<React.PropsWithChildren<{
   );
 };
 
+// v1.4a — Pemetaan scene -> komponen hidup di scenes/registry.tsx (kamus
+// scene sisi renderer, berpasangan dengan config/scene-catalog.json).
+// Komponen ini hanya merakit VisualWorld per scene lalu mendelegasikan.
 const EpisodeScene: React.FC<{
   scene: EpisodeRenderScene;
   episodeId: string;
@@ -144,61 +141,7 @@ const EpisodeScene: React.FC<{
       treatment: assetEntry?.treatment === "hero" ? "hero" : "backdrop",
     };
   }
-  switch (scene.type) {
-    case "hook":
-      return <HookScene {...scene.visual} world={world} surface={scene.surface} />;
-
-    case "correction":
-      return <CorrectionScene {...scene.visual} world={world} surface={scene.surface} />;
-
-    case "data_proof":
-      return (
-        <DataProofScene
-          {...scene.visual}
-          world={world}
-          surface={scene.surface}
-          source={
-            scene.variant === "comparison"
-              ? ""
-              : scene.visual.source
-          }
-        />
-      );
-
-    case "task_breakdown":
-      return (
-        <TaskBreakdownScene {...scene.visual} world={world} surface={scene.surface} />
-      );
-
-    case "comparison":
-      return (
-        <ComparisonScene {...scene.visual} world={world} surface={scene.surface} />
-      );
-
-    case "outcome":
-      return (
-        <OutcomeScene
-          {...scene.visual}
-          world={world}
-          surface={scene.surface}
-          question={
-            scene.variant === "framework"
-              ? ""
-              : scene.visual.question
-          }
-        />
-      );
-
-    case "closing_brand":
-      return (
-        <ClosingBrandScene {...scene.visual} world={world} surface={scene.surface} />
-      );
-
-    default: {
-      const exhaustiveCheck: never = scene;
-      return exhaustiveCheck;
-    }
-  }
+  return renderScene(scene, world);
 };
 
 export const GenericEpisode: React.FC<
