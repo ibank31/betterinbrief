@@ -51,9 +51,19 @@ export function qcVisual(id) {
     `select='not(mod(n\\,${Math.max(1, Math.floor(compile.totalFrames / 12))}))',scale=270:480,tile=4x3`,
     "-frames:v", "1", contact]);
   check(checks, "visual.contactSheet", fs.existsSync(contact), contact);
+
+  // Cover diambil PASCA semua entrance + count-up hook mendarat, bukan di tengah
+  // animasi (bug lama: -ss 0.2 memotret count-up di 48%). Entrance + count-up
+  // scene pertama selesai <= frame komposisi 46; cold-open skip 14 frame di
+  // GenericEpisode berarti itu = frame video 32 (~1,07 dtk @30fps). Clamp agar
+  // tetap berada di dalam scene pertama untuk hook yang sangat pendek.
   const cover = path.join(workDir, "qc", "cover.jpg");
-  runOk("ffmpeg", ["-y", "-v", "error", "-ss", "0.2", "-i", mp4, "-frames:v", "1", "-q:v", "2", cover]);
-  check(checks, "visual.cover", fs.existsSync(cover), cover);
+  const s1 = compile.sceneTimings[0];
+  const COVER_SETTLE_VIDEO_FRAMES = 32;
+  const coverFrame = Math.max(0, Math.min(s1.from + COVER_SETTLE_VIDEO_FRAMES, s1.from + s1.durationInFrames - 6));
+  const coverT = Math.round((coverFrame / fps) * 100) / 100;
+  runOk("ffmpeg", ["-y", "-v", "error", "-ss", String(coverT), "-i", mp4, "-frames:v", "1", "-q:v", "2", cover]);
+  check(checks, "visual.cover", fs.existsSync(cover), `${cover} @${coverT}s (pasca count-up hook)`);
 
   // Safe zone / overflow: batas teks sudah divalidasi saat validate; stills untuk review manusia.
   check(checks, "visual.safeZoneReview", true,
