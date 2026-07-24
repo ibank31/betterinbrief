@@ -2,24 +2,12 @@ import fs from "node:fs";
 import path from "node:path";
 import {SYSTEM_DIR, loadConfig, readJson} from "../cli/lib/util.mjs";
 
-const SCENE_VARIANTS = {
-  hook: ["statistic", "contrarian", "question"],
-  correction: ["equation", "strike_replace", "reframe"],
-  data_proof: ["single_value", "proportion", "comparison", "timeline"],
-  task_breakdown: ["cards", "stack", "flow"],
-  comparison: ["split", "ladder", "timeline", "two_speed"],
-  outcome: ["statement", "question", "framework", "reframe"],
-  closing_brand: ["standard"],
-};
-const VISUAL_REQUIRED = {
-  hook: ["eyebrow", "statistic", "statisticSuffix", "headline"],
-  correction: ["eyebrow", "misconception", "correction"],
-  data_proof: ["eyebrow", "value", "label", "source"],
-  task_breakdown: ["eyebrow", "headline", "jobTitle", "tasks"],
-  comparison: ["eyebrow", "leftLabel", "leftValue", "rightLabel", "rightValue", "verdict"],
-  outcome: ["eyebrow", "setup", "outcome", "comparison", "question"],
-  closing_brand: ["tagline"],
-};
+// v1.4a — Kamus scene pola katalog: daftar tipe scene, variant, field visual
+// wajib, batas panjang per-tipe (maxLen), dan aturan field array (listFields)
+// hidup di config/scene-catalog.json. Pasangan renderer-nya adalah
+// app/remotion/src/scenes/registry.tsx — keduanya diubah bersama saat
+// menambah tipe scene baru. Tanpa dependensi npm baru: validator tangan
+// sendiri menggantikan peran schema library.
 
 const VISUAL_LANES = [
   "editorial_collage", "evidence_desk", "diagram_world",
@@ -36,7 +24,7 @@ const ASSET_RIGHTS = ["original", "public_domain", "cc_verified", "permission_ve
 function checkEnum(errors, schema, obj, key, where) {
   const spec = schema.properties[key];
   if (spec && spec.enum && !spec.enum.includes(obj[key])) {
-    errors.push(`${where}: nilai "${obj[key]}" untuk ${key} tidak dikenal. Pilihan: ${spec.enum.join(", ")}`);
+    errors.push(`${where}: nilai \"${obj[key]}\" untuk ${key} tidak dikenal. Pilihan: ${spec.enum.join(", ")}`);
   }
 }
 
@@ -46,9 +34,10 @@ export function validateEpisode(episode) {
   const schema = readJson(path.join(SYSTEM_DIR, "schemas", "episode.schema.json"));
   const limits = loadConfig("limits");
   const voices = loadConfig("voices");
+  const sceneCatalog = loadConfig("scene-catalog").sceneTypes;
 
   if (episode.schemaVersion !== "1.0") {
-    errors.push(`schemaVersion "${episode.schemaVersion}" tidak didukung. Versi saat ini: 1.0 (lihat schemas/MIGRATIONS.md).`);
+    errors.push(`schemaVersion \"${episode.schemaVersion}\" tidak didukung. Versi saat ini: 1.0 (lihat schemas/MIGRATIONS.md).`);
     return {errors, warnings};
   }
   for (const key of schema.required) {
@@ -65,7 +54,7 @@ export function validateEpisode(episode) {
   }
   if (episode.title.length > limits.text.titleMax) errors.push(`title melebihi ${limits.text.titleMax} karakter`);
   if (!voices.allowedVoices.includes(episode.voice)) {
-    errors.push(`voice "${episode.voice}" tidak ada di config/voices.json (${voices.allowedVoices.join(", ")})`);
+    errors.push(`voice \"${episode.voice}\" tidak ada di config/voices.json (${voices.allowedVoices.join(", ")})`);
   }
 
   // rights
@@ -116,15 +105,16 @@ export function validateEpisode(episode) {
     const expected = `S${String(i + 1).padStart(2, "0")}`;
     const where = `scene ${s.id || i + 1}`;
     if (s.id !== expected) errors.push(`${where}: id harus ${expected} (berurutan)`);
-    if (!(s.type in SCENE_VARIANTS)) { errors.push(`${where}: type "${s.type}" tidak dikenal`); return; }
-    if (!SCENE_VARIANTS[s.type].includes(s.variant)) {
-      errors.push(`${where}: variant "${s.variant}" tidak valid untuk ${s.type} (${SCENE_VARIANTS[s.type].join(", ")})`);
+    const catalogEntry = sceneCatalog[s.type];
+    if (!catalogEntry) { errors.push(`${where}: type \"${s.type}\" tidak dikenal. Kamus scene: ${Object.keys(sceneCatalog).join(", ")}`); return; }
+    if (!catalogEntry.variants.includes(s.variant)) {
+      errors.push(`${where}: variant \"${s.variant}\" tidak valid untuk ${s.type} (${catalogEntry.variants.join(", ")})`);
     }
     if (i === 0 && (s.role !== "hook" || s.type !== "hook")) errors.push("Scene pertama harus hook");
     if (i === n - 1 && (s.role !== "closing" || s.type !== "closing_brand")) errors.push("Scene terakhir harus closing_brand");
     if (!s.narration || !s.narration.trim()) errors.push(`${where}: narration kosong`);
     else if (s.narration.length > limits.text.narrationMaxPerScene) errors.push(`${where}: narration melebihi ${limits.text.narrationMaxPerScene} karakter`);
-    const req = VISUAL_REQUIRED[s.type] || [];
+    const req = catalogEntry.requiredVisual || [];
     for (const k of req) {
       if (s.visual == null || s.visual[k] == null || (typeof s.visual[k] === "string" && !s.visual[k].trim() && k !== "suffix")) {
         errors.push(`${where}: visual.${k} wajib untuk type ${s.type}`);
@@ -142,6 +132,34 @@ export function validateEpisode(episode) {
     checkLen("subtitle", limits.text.subtitleMax);
     checkLen("label", limits.text.labelMax);
     checkLen("statistic", limits.text.statisticMax);
+    // Batas panjang per-tipe dari kamus scene (anti-overflow untuk field
+    // yang tidak dicakup batas generik di atas, mis. quote/beforeText).
+    for (const [field, maxLen] of Object.entries(catalogEntry.maxLen || {})) checkLen(field, maxLen);
+    // Field array dari kamus scene: jumlah item + key string wajib per item.
+    for (const [field, rule] of Object.entries(catalogEntry.listFields || {})) {
+      const list = v[field];
+      if (!Array.isArray(list)) {
+        if (req.includes(field)) errors.push(`${where}: visual.${field} harus array`);
+        continue;
+      }
+      if (list.length < rule.min || list.length > rule.max) {
+        errors.push(`${where}: visual.${field} berisi ${list.length} item, di luar batas ${rule.min}-${rule.max}`);
+      }
+      list.forEach((item, idx) => {
+        if (!item || typeof item !== "object" || Array.isArray(item)) {
+          errors.push(`${where}: visual.${field}[${idx}] harus object`);
+          return;
+        }
+        for (const [key, keyMax] of Object.entries(rule.itemKeys || {})) {
+          const value = item[key];
+          if (typeof value !== "string" || !value.trim()) {
+            errors.push(`${where}: visual.${field}[${idx}].${key} wajib string tidak kosong`);
+          } else if (value.length > keyMax) {
+            errors.push(`${where}: visual.${field}[${idx}].${key} (${value.length}) melebihi batas ${keyMax} karakter - berisiko overflow`);
+          }
+        }
+      });
+    }
     // Visual Operating System v2. This is optional for legacy episodes: the
     // renderer resolves a scene-type default. When authors opt in, validate
     // the instruction early so every future render is deterministic.

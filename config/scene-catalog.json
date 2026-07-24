@@ -1,0 +1,59 @@
+{
+  "catalogVersion": "1.0",
+  "comment": "Kamus scene BinB (pola katalog). Satu sumber kebenaran untuk authoring & validasi (dibaca app/pipeline/validate.mjs). Pasangan renderer-nya: app/remotion/src/scenes/registry.tsx + app/remotion/src/episodes/types.ts + schemas/episode.schema.json - semuanya WAJIB diubah bersama saat menambah tipe scene. listFields.itemKeys = key string wajib per item beserta batas panjangnya.",
+  "sceneTypes": {
+    "hook": {
+      "variants": ["statistic", "contrarian", "question"],
+      "requiredVisual": ["eyebrow", "statistic", "statisticSuffix", "headline"]
+    },
+    "correction": {
+      "variants": ["equation", "strike_replace", "reframe"],
+      "requiredVisual": ["eyebrow", "misconception", "correction"]
+    },
+    "data_proof": {
+      "variants": ["single_value", "proportion", "comparison", "timeline"],
+      "requiredVisual": ["eyebrow", "value", "label", "source"]
+    },
+    "task_breakdown": {
+      "variants": ["cards", "stack", "flow"],
+      "requiredVisual": ["eyebrow", "headline", "jobTitle", "tasks"]
+    },
+    "comparison": {
+      "variants": ["split", "ladder", "timeline", "two_speed"],
+      "requiredVisual": ["eyebrow", "leftLabel", "leftValue", "rightLabel", "rightValue", "verdict"]
+    },
+    "outcome": {
+      "variants": ["statement", "question", "framework", "reframe"],
+      "requiredVisual": ["eyebrow", "setup", "outcome", "comparison", "question"]
+    },
+    "closing_brand": {
+      "variants": ["standard"],
+      "requiredVisual": ["tagline"]
+    },
+    "timeline": {
+      "variants": ["standard"],
+      "requiredVisual": ["eyebrow", "headline", "events"],
+      "listFields": {"events": {"min": 2, "max": 4, "itemKeys": {"marker": 16, "label": 70}}}
+    },
+    "ranking": {
+      "variants": ["standard"],
+      "requiredVisual": ["eyebrow", "headline", "items"],
+      "listFields": {"items": {"min": 2, "max": 5, "itemKeys": {"label": 60}}}
+    },
+    "before_after": {
+      "variants": ["standard"],
+      "requiredVisual": ["eyebrow", "beforeLabel", "beforeText", "afterLabel", "afterText"],
+      "maxLen": {"beforeLabel": 24, "afterLabel": 24, "beforeText": 90, "afterText": 90}
+    },
+    "process": {
+      "variants": ["standard"],
+      "requiredVisual": ["eyebrow", "headline", "steps"],
+      "listFields": {"steps": {"min": 3, "max": 5, "itemKeys": {"label": 60}}}
+    },
+    "quote": {
+      "variants": ["standard"],
+      "requiredVisual": ["eyebrow", "quote", "attribution", "source"],
+      "maxLen": {"quote": 120, "attribution": 48}
+    }
+  }
+}

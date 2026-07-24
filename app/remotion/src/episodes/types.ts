@@ -98,7 +98,12 @@ export type EpisodeSceneType =
   | "task_breakdown"
   | "comparison"
   | "outcome"
-  | "closing_brand";
+  | "closing_brand"
+  | "timeline"
+  | "ranking"
+  | "before_after"
+  | "process"
+  | "quote";
 
 export type HookVariant =
   | "statistic"
@@ -134,6 +139,9 @@ export type OutcomeVariant =
   | "reframe";
 
 export type ClosingBrandVariant = "standard";
+
+/** v1.4a — tipe scene kamus baru memulai hidup dengan satu variant standar. */
+export type CatalogStandardVariant = "standard";
 
 export type SceneTiming = {
   from: number;
@@ -212,6 +220,63 @@ export type ClosingBrandVisual = {
   closingLine?: string;
 };
 
+export type TimelineEventItem = {
+  /** Tahun/tanggal/penanda singkat dari klaim (mis. "2019", "Q3 2025"). */
+  marker: string;
+  label: string;
+  highlight?: boolean;
+};
+
+export type TimelineVisual = {
+  eyebrow: string;
+  headline: string;
+  events: TimelineEventItem[];
+  subtitle?: string;
+};
+
+export type RankingItem = {
+  label: string;
+  /** Angka asli dari klaim. Batang hanya digambar bila SEMUA item punya value. */
+  value?: number;
+  valueLabel?: string;
+};
+
+export type RankingVisual = {
+  eyebrow: string;
+  headline: string;
+  items: RankingItem[];
+  source?: string;
+  subtitle?: string;
+};
+
+export type BeforeAfterVisual = {
+  eyebrow: string;
+  beforeLabel: string;
+  beforeText: string;
+  afterLabel: string;
+  afterText: string;
+  subtitle?: string;
+};
+
+export type ProcessStepItem = {
+  label: string;
+};
+
+export type ProcessVisual = {
+  eyebrow: string;
+  headline: string;
+  steps: ProcessStepItem[];
+  subtitle?: string;
+};
+
+export type QuoteVisual = {
+  eyebrow: string;
+  quote: string;
+  attribution: string;
+  source: string;
+  subtitle?: string;
+};
+
 type EpisodeSceneBase<
   TType extends EpisodeSceneType,
   TVariant extends string,
@@ -288,26 +353,16 @@ export type ClosingBrandEpisodeScene = EpisodeSceneBase<
   ClosingBrandVisual
 >;
 
-export type EpisodeRenderScene =
-  | HookEpisodeScene
-  | CorrectionEpisodeScene
-  | DataProofEpisodeScene
-  | TaskBreakdownEpisodeScene
-  | ComparisonEpisodeScene
-  | OutcomeEpisodeScene
-  | ClosingBrandEpisodeScene;
+export type TimelineEpisodeScene = EpisodeSceneBase<
+  "timeline",
+  CatalogStandardVariant,
+  TimelineVisual
+>;
 
-export type EpisodeRenderProps = {
-  schemaVersion: "1.1";
-  accountPhase: AccountPhase;
-  contentOrigin: ContentOrigin;
-  episodeId: string;
-  title: string;
-  pillar: ContentPillar;
-  formatFamily: FormatFamily;
-  voice: "af_sarah";
-  musicLane: MusicLane;
-  campaign: CampaignMetadata | null;
-  scenes: readonly EpisodeRenderScene[];
-  captions: readonly CaptionCue[];
-};
+export type RankingEpisodeScene = EpisodeSceneBase<
+  "ranking",
+  CatalogStandardVariant,
+  RankingVisual
+>;
+
+export type BeforeAfterEpisodeScene = EpisodeSceneBase

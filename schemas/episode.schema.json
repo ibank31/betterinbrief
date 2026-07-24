@@ -289,7 +289,12 @@
               "task_breakdown",
               "comparison",
               "outcome",
-              "closing_brand"
+              "closing_brand",
+              "timeline",
+              "ranking",
+              "before_after",
+              "process",
+              "quote"
             ]
           },
           "variant": {
