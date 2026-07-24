@@ -6,6 +6,11 @@ on:
         description: Episode ID, contoh Seed_004
         required: true
         default: SmokeTest_000
+  push:
+    branches:
+      - main
+    paths:
+      - trigger/build-request.json
 
 jobs:
   build:
@@ -28,6 +33,20 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
+
+      - name: Tentukan episode (dispatch atau trigger file)
+        run: |
+          if [ -z "$EPISODE" ]; then
+            EP=$(node -p "JSON.parse(require('fs').readFileSync('trigger/build-request.json','utf8')).episode")
+            if [ -z "$EP" ] || [ "$EP" = "undefined" ] || [ "$EP" = "null" ]; then
+              echo "ERROR: trigger/build-request.json tidak berisi field episode yang valid"
+              exit 1
+            fi
+            echo "EPISODE=$EP" >> "$GITHUB_ENV"
+            echo "Episode dari trigger file: $EP"
+          else
+            echo "Episode dari dispatch: $EPISODE"
+          fi
 
       - name: Paket sistem
         run: |
@@ -74,7 +93,7 @@ jobs:
       - name: Upload video matang
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ inputs.episode }}-publish
+          name: ${{ env.EPISODE }}-publish
           path: /home/runner/binb-home/publish/**
           if-no-files-found: error
           retention-days: 14
