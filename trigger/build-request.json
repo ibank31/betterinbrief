@@ -1,6 +1,6 @@
 {
-  "episode": "SmokeTest_000",
+  "episode": "ai-pay-gap",
   "requestedBy": "RadjaAgent",
-  "reason": "v1.6a SFX + mix v4.1 limiter true-peak-safe (oversample 4x fix overshoot inter-sample)",
-  "at": "2026-07-24T16:14:00Z"
+  "reason": "Antrean no. 7: produksi ulang topik Seed_004 dengan slug topik + fix narasi S02 + footage subjek beda per scene",
+  "at": "2026-07-24T16:41:00Z"
 }
