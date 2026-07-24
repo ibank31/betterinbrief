@@ -8,7 +8,7 @@
   "pillar": "company_founder_strategy",
   "formatFamily": "strategy_breakdown",
   "voice": "af_heart,af_kore",
-  "musicLane": "business_strategy",
+  "musicLane": "money_people_decisions",
   "campaign": null,
   "rights": {
     "musicLicensed": true,
@@ -90,7 +90,7 @@
       "variant": "contrarian",
       "surface": "dark",
       "motion": "measured_reveal",
-      "narration": "Costco loses money on its most famous product. On purpose. A hot dog and a soda: one dollar fifty. The price hasn't moved in forty years.",
+      "narration": "Costco loses money on its most famous product. On purpose. A hot dog and soda: one fifty. Unchanged for forty years.",
       "claims": [
         "C01"
       ],
@@ -125,7 +125,7 @@
       "variant": "standard",
       "surface": "light",
       "motion": "restrained_lift",
-      "narration": "When the new CEO tried to raise it to a dollar seventy-five, co-founder Jim Sinegal gave an answer that became company law: touch the hot dog, and I will kill you. Figure it out.",
+      "narration": "When the CEO tried to raise it, co-founder Jim Sinegal's answer became company law: touch the hot dog, and I will kill you.",
       "claims": [
         "C03"
       ],
@@ -143,7 +143,7 @@
       "variant": "standard",
       "surface": "dark",
       "motion": "sharp_correction",
-      "narration": "Nineteen eighty-five: one fifty. Today: still one fifty. Inflation says it should cost over four dollars. Last year, members bought a record 245 million of them.",
+      "narration": "Nineteen eighty-five: one fifty. Today: still one fifty. Inflation says over four dollars. Members bought 245 million last year.",
       "claims": [
         "C01",
         "C02",
@@ -165,7 +165,7 @@
       "variant": "single_value",
       "surface": "dark",
       "motion": "measured_reveal",
-      "narration": "So where's the profit? The membership desk. Ninety-two percent of North American members renew every year. Five point three billion dollars in fees, straight to the bottom line.",
+      "narration": "The real profit? The membership desk. Ninety-two percent renew every year - five point three billion dollars in fees.",
       "claims": [
         "C04"
       ],
@@ -203,7 +203,7 @@
       "variant": "standard",
       "surface": "light",
       "motion": "stacked_build",
-      "narration": "That's the machine. Lose money where everyone can see it. Earn trust on every price tag in the building. Then collect the real profit in membership fees. The hot dog isn't food - it's marketing you can eat.",
+      "narration": "The machine: lose money where everyone can see it. Earn trust on every price tag. Collect the profit in membership fees. The hot dog is marketing you can eat.",
       "visual": {
         "eyebrow": "THE PLAYBOOK",
         "headline": "How a loss becomes a moat.",
@@ -227,7 +227,7 @@
       "variant": "statement",
       "surface": "orange",
       "motion": "restrained_lift",
-      "narration": "The lesson travels far beyond retail. Pick one visible promise, and never break it. Trust compounds faster than margin. So: what's your one-fifty?",
+      "narration": "Pick one visible promise, and never break it. Trust compounds faster than margin. What's your one-fifty?",
       "visual": {
         "eyebrow": "THE LESSON",
         "setup": "Costco doesn't sell hot dogs.",
