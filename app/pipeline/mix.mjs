@@ -86,6 +86,14 @@ export function mixEpisode(id) {
   // Pass yang diterima menjadi basis pass berikutnya. Jika sebuah pass
   // ditolak, ulangi dengan gain setengahnya (backoff). Episode penuh dengan
   // narasi rapat biasanya lolos dari pass linear dan tidak menyentuh pass ini.
+  //
+  // v4.1 (bukti run #20, log via gh + D1): alimiter bekerja di domain SAMPEL,
+  // sedangkan gerbang mengukur TRUE PEAK oversampled. Transien tajam (VO +
+  // SFX tick/impact v1.6a) menghasilkan overshoot inter-sample ~0.9 dB:
+  // pass dengan I=-10.94 (sudah di dalam toleransi integrated) ditolak
+  // hanya karena TP terukur -0.8. Solusi: oversample 4x sebelum limiter
+  // lalu kembali ke sample rate config — limiter menjadi true-peak-safe,
+  // overshoot inter-sample runtuh ke ~0.1 dB tanpa menyentuh gerbang.
   let backoff = 1;
   const maxStepDb = 2.5;
   for (let i = 0; i < 8 && Math.abs(outI - targetI) > tol * 0.75; i++) {
@@ -95,7 +103,7 @@ export function mixEpisode(id) {
     const limit = Math.pow(10, (audioCfg.truePeakMaxDbtp - 0.7) / 20);
     const corrected = path.join(mixDir, "mixed-audio.corrected.wav");
     runOk("ffmpeg", ["-y", "-v", "error", "-i", final,
-      "-af", `volume=${gainDb}dB,alimiter=limit=${limit.toFixed(4)}:attack=5:release=100:level=false`,
+      "-af", `volume=${gainDb}dB,aresample=${audioCfg.sampleRate * 4},alimiter=limit=${limit.toFixed(4)}:attack=5:release=100:level=false,aresample=${audioCfg.sampleRate}`,
       "-ar", String(audioCfg.sampleRate), "-ac", String(audioCfg.channels), "-c:a", "pcm_s24le", corrected]);
     const pm = run("ffmpeg", ["-i", corrected, "-af", `loudnorm=${target}:print_format=json`, "-f", "null", "-"]);
     const meas2 = parseLoudnorm(pm.stderr);
