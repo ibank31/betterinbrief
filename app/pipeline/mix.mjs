@@ -60,9 +60,14 @@ export function mixEpisode(id) {
   const tol = audioCfg.loudnessToleranceLu;
 
   // Pass 3 (koreksi): loudnorm linear bisa berhenti di bawah target saat gain
-  // dibatasi true peak ceiling. Terapkan gain statis + true-peak limiter.
-  // Jika sebuah pass ditolak (mis. TP overshoot), JANGAN langsung menyerah:
-  // ulangi dengan gain setengahnya (backoff) sampai masuk toleransi.
+  // dibatasi true peak ceiling. Materi dengan crest factor tinggi (VO jarang,
+  // puncak konsonan tajam — kasus SmokeTest) TIDAK bisa dinaikkan dengan gain
+  // + limiter saja: setiap dB gain langsung menabrak ceiling TP. Maka puncak
+  // diturunkan sungguhan dulu dengan kompresor (4:1 di atas -12 dBFS, attack
+  // cepat) SEBELUM limiter, sehingga gain punya ruang masuk. Episode penuh
+  // dengan narasi rapat biasanya lolos dari pass linear dan tidak pernah
+  // menyentuh pass ini. Jika sebuah pass ditolak, ulangi dengan gain
+  // setengahnya (backoff) alih-alih langsung menyerah.
   let backoff = 1;
   for (let i = 0; i < 8 && Math.abs(outI - targetI) > tol * 0.75; i++) {
     const gainDb = +((targetI - outI) * backoff).toFixed(2);
@@ -70,7 +75,7 @@ export function mixEpisode(id) {
     const limit = Math.pow(10, (audioCfg.truePeakMaxDbtp - 0.7) / 20);
     const corrected = path.join(mixDir, "mixed-audio.corrected.wav");
     runOk("ffmpeg", ["-y", "-v", "error", "-i", final,
-      "-af", `volume=${gainDb}dB,alimiter=limit=${limit.toFixed(4)}:attack=5:release=100:level=false`,
+      "-af", `volume=${gainDb}dB,acompressor=threshold=0.25:ratio=4:attack=4:release=120,alimiter=limit=${limit.toFixed(4)}:attack=5:release=100:level=false`,
       "-ar", String(audioCfg.sampleRate), "-ac", String(audioCfg.channels), "-c:a", "pcm_s24le", corrected]);
     const pm = run("ffmpeg", ["-i", corrected, "-af", `loudnorm=${target}:print_format=json`, "-f", "null", "-"]);
     const meas2 = parseLoudnorm(pm.stderr);
@@ -90,33 +95,6 @@ export function mixEpisode(id) {
     outLra = meas2.input_lra;
     backoff = 1;
     log(`mix: pass koreksi ${gainDb > 0 ? "+" : ""}${gainDb} dB -> I=${outI} LUFS, TP=${outTp} dBTP`);
-  }
-
-  // Pass 4 (jaring pengaman): materi pendek dengan VO jarang + peak tinggi
-  // bisa mentok di mode linear/statis (kasus SmokeTest). Dynamic loudnorm
-  // 2-pass memakai limiter true-peak internal sehingga target integrated
-  // tetap tercapai TANPA melonggarkan gerbang QC sedikit pun.
-  if (Math.abs(outI - targetI) > tol * 0.75) {
-    const dynamicOut = path.join(mixDir, "mixed-audio.dynamic.wav");
-    const dyn = `loudnorm=${target}:measured_I=${measured.input_i}:measured_TP=${measured.input_tp}:measured_LRA=${measured.input_lra}:measured_thresh=${measured.input_thresh}:offset=${measured.target_offset}:linear=false:print_format=json`;
-    const p3 = run("ffmpeg", ["-y", "-v", "info", "-i", draft, "-af", dyn,
-      "-ar", String(audioCfg.sampleRate), "-ac", String(audioCfg.channels), "-c:a", "pcm_s24le", dynamicOut]);
-    if (p3.status === 0) {
-      const pm = run("ffmpeg", ["-i", dynamicOut, "-af", `loudnorm=${target}:print_format=json`, "-f", "null", "-"]);
-      const meas3 = parseLoudnorm(pm.stderr);
-      const newI = parseFloat(meas3.input_i);
-      const newTp = parseFloat(meas3.input_tp);
-      if (Math.abs(newI - targetI) < Math.abs(outI - targetI) && newTp <= audioCfg.truePeakMaxDbtp + 0.1) {
-        fs.renameSync(dynamicOut, final);
-        outI = newI;
-        outTp = newTp;
-        outLra = meas3.input_lra;
-        log(`mix: jaring pengaman dynamic loudnorm -> I=${outI} LUFS, TP=${outTp} dBTP`);
-      } else {
-        fs.rmSync(dynamicOut, {force: true});
-        log(`mix: jaring pengaman dynamic ditolak (I=${newI}, TP=${newTp}); hasil sebelumnya dipertahankan`);
-      }
-    }
   }
 
   const issues = [];
