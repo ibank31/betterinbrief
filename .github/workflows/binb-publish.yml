@@ -1,0 +1,134 @@
+name: BinB Publish
+on:
+  workflow_dispatch:
+    inputs:
+      episode:
+        description: Episode ID, contoh costco-hot-dog
+        required: true
+  push:
+    branches:
+      - main
+    paths:
+      - trigger/publish-request.json
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      EPISODE: ${{ inputs.episode }}
+      IG_USER_ID: ${{ secrets.IG_USER_ID }}
+      IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: "2336f3c9ddcd5227f2493258fc355327"
+      R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
+      R2_BUCKET: binb-publish
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tentukan episode (dispatch atau trigger file)
+        run: |
+          if [ -z "$EPISODE" ]; then
+            EP=$(node -p "JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')).episode")
+            if [ -z "$EP" ] || [ "$EP" = "undefined" ] || [ "$EP" = "null" ]; then
+              echo "ERROR: trigger/publish-request.json tidak berisi field episode yang valid"
+              exit 1
+            fi
+            echo "EPISODE=$EP" >> "$GITHUB_ENV"
+            echo "Episode dari trigger file: $EP"
+          else
+            echo "Episode dari dispatch: $EPISODE"
+          fi
+
+      - name: Validasi prasyarat
+        run: |
+          MISSING=""
+          [ -z "$IG_USER_ID" ] && MISSING="$MISSING IG_USER_ID(secret)"
+          [ -z "$IG_ACCESS_TOKEN" ] && MISSING="$MISSING IG_ACCESS_TOKEN(secret)"
+          [ -z "$R2_PUBLIC_BASE" ] && MISSING="$MISSING R2_PUBLIC_BASE(variable)"
+          if [ -n "$MISSING" ]; then
+            echo "ERROR: konfigurasi belum lengkap:$MISSING"
+            exit 1
+          fi
+          echo "Prasyarat lengkap."
+
+      - name: Unduh rilis matang terbaru
+        run: |
+          NUM=$(gh release list --limit 200 --json tagName --jq '.[].tagName' | grep -E "^bank-${EPISODE}-r[0-9]+$" | sed "s/^bank-${EPISODE}-r//" | sort -n | tail -1)
+          if [ -z "$NUM" ]; then
+            echo "ERROR: tidak ada rilis bank-${EPISODE}-r<N> di repo ini"
+            exit 1
+          fi
+          TAG="bank-${EPISODE}-r${NUM}"
+          echo "TAG=$TAG" >> "$GITHUB_ENV"
+          gh release download "$TAG" --pattern "*publish-ready.mp4" --dir dl
+          FILE=$(find dl -name "*publish-ready.mp4" | head -1)
+          if [ -z "$FILE" ]; then
+            echo "ERROR: aset *publish-ready.mp4 tidak ditemukan di rilis $TAG"
+            exit 1
+          fi
+          echo "VIDEO_FILE=$FILE" >> "$GITHUB_ENV"
+          echo "Rilis dipakai: $TAG -> $FILE"
+
+      - name: Siapkan caption dari packaging episode
+        run: |
+          node -e "const p=require('./episodes/'+process.env.EPISODE+'/episode.json').packaging; if(!p||!p.instagramCaption){console.error('ERROR: packaging.instagramCaption tidak ada');process.exit(1)} require('fs').writeFileSync('caption.txt',p.instagramCaption)"
+          echo "Caption siap ($(wc -c < caption.txt) byte)."
+
+      - name: Upload video ke R2 (etalase publik)
+        run: |
+          KEY="${TAG}.mp4"
+          npx --yes wrangler@3 r2 object put "${R2_BUCKET}/${KEY}" --file "$VIDEO_FILE" --remote
+          BASE="${R2_PUBLIC_BASE%/}"
+          echo "VIDEO_URL=${BASE}/${KEY}" >> "$GITHUB_ENV"
+          echo "Video tersedia di etalase R2 dengan key ${KEY}"
+
+      - name: Buat container Reels
+        run: |
+          RES=$(curl -s -X POST "https://graph.instagram.com/v23.0/${IG_USER_ID}/media" --data-urlencode "media_type=REELS" --data-urlencode "video_url=${VIDEO_URL}" --data-urlencode "caption@caption.txt" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
+          CID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
+          if [ -z "$CID" ]; then
+            echo "ERROR: gagal membuat container Reels. Respons API:"
+            echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); JSON.stringify(j.error||j,null,2)"
+            exit 1
+          fi
+          echo "CREATION_ID=$CID" >> "$GITHUB_ENV"
+          echo "Container dibuat: $CID"
+
+      - name: Tunggu container siap
+        run: |
+          STATUS=UNKNOWN
+          for i in $(seq 1 30); do
+            STATUS=$(curl -s "https://graph.instagram.com/v23.0/${CREATION_ID}?fields=status_code&access_token=${IG_ACCESS_TOKEN}" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.status_code || 'UNKNOWN'")
+            echo "Cek $i: status container = $STATUS"
+            if [ "$STATUS" = "FINISHED" ]; then break; fi
+            if [ "$STATUS" = "ERROR" ]; then
+              echo "ERROR: pemrosesan container gagal di sisi Instagram"
+              exit 1
+            fi
+            sleep 10
+          done
+          if [ "$STATUS" != "FINISHED" ]; then
+            echo "ERROR: timeout menunggu container (status terakhir: $STATUS)"
+            exit 1
+          fi
+
+      - name: Publish Reels
+        run: |
+          RES=$(curl -s -X POST "https://graph.instagram.com/v23.0/${IG_USER_ID}/media_publish" --data-urlencode "creation_id=${CREATION_ID}" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
+          MEDIA_ID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
+          if [ -z "$MEDIA_ID" ]; then
+            echo "ERROR: publish gagal. Respons API:"
+            echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); JSON.stringify(j.error||j,null,2)"
+            exit 1
+          fi
+          echo "SUKSES: Reels tayang. Media ID: $MEDIA_ID (episode $EPISODE, rilis $TAG)"
