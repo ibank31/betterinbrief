@@ -4,16 +4,19 @@ import {P, writeJson, log} from "../cli/lib/util.mjs";
 import {qcTechnical} from "./technical.mjs";
 import {qcContent} from "./content.mjs";
 import {qcVisual} from "./visual.mjs";
+import {qcVariety} from "./variety.mjs";
 
-export function runQc(id) {
+export async function runQc(id) {
   const workDir = P.work(id);
   const tech = qcTechnical(id);
   const content = qcContent(id);
   const visual = qcVisual(id);
+  const variety = await qcVariety(id);
   const all = [
     ...tech.checks.map((c) => ({group: "technical", ...c})),
     ...content.checks.map((c) => ({group: "content", ...c})),
     ...visual.checks.map((c) => ({group: "visual", ...c})),
+    ...variety.checks.map((c) => ({group: "variety", ...c})),
   ];
   const fails = all.filter((c) => c.status === "fail");
   const warns = all.filter((c) => c.status === "warn");
@@ -23,7 +26,7 @@ export function runQc(id) {
     counts: {pass: all.filter((c) => c.status === "pass").length, warn: warns.length, fail: fails.length},
     measured: tech.measured || null,
     checks: all,
-    artifacts: {contactSheet: visual.contactSheet, cover: visual.cover, stills: visual.stills},
+    artifacts: {contactSheet: visual.contactSheet, cover: visual.cover, stills: visual.stills, varietyFingerprint: variety.fingerprintPath},
   };
   writeJson(path.join(workDir, "qc-report.json"), report);
 

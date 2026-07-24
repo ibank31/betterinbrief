@@ -1,0 +1,17 @@
+{
+  "ledger": {
+    "provider": "cloudflare-d1",
+    "accountId": "2336f3c9ddcd5227f2493258fc355327",
+    "databaseId": "8a8e7905-f3f2-49e6-9ecf-d7be35702871",
+    "apiTokenEnv": "CLOUDFLARE_API_TOKEN",
+    "timeoutMs": 15000
+  },
+  "compare": {
+    "lastEpisodes": 5,
+    "warnOverlapRatio": 0.75,
+    "excludeEpisodePrefixes": ["SmokeTest"]
+  },
+  "footage": {
+    "stopwords": ["the", "and", "for", "with", "from", "into", "over", "under", "person", "people", "man", "woman", "men", "women", "hand", "hands", "young", "adult", "modern", "close", "view"]
+  }
+}

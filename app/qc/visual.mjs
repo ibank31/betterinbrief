@@ -12,6 +12,12 @@ function frameLuma(mp4, tSec, outJpg) {
   return m ? parseFloat(m[1]) : null;
 }
 
+// v1.5a: still per scene diambil di TIGA titik (early/mid/late), bukan hanya
+// midpoint. Scene dengan progressive reveal / micro-beat bisa terlihat benar
+// di tengah tapi cacat di awal (elemen belum masuk) atau di akhir (elemen
+// overshoot/menabrak safe zone). Ketiganya masuk artifact untuk review owner.
+const STILL_PHASES = [["early", 0.14], ["mid", 0.5], ["late", 0.86]];
+
 export function qcVisual(id) {
   const brand = loadConfig("brand");
   const workDir = P.work(id);
@@ -28,15 +34,17 @@ export function qcVisual(id) {
   check(checks, "visual.fontsBundled", missingFonts.length === 0,
     missingFonts.length ? `Font hilang di ${brand.font.bundledDir}: ${missingFonts.join(", ")} (jalankan installer/04)` : "semua font Inter terbundel");
 
-  // Still per scene (midpoint) + luma
+  // Still per scene di tiga fase (early/mid/late) + luma
   const stills = [];
   for (const s of compile.sceneTimings) {
-    const mid = (s.from + s.durationInFrames / 2) / fps;
-    const jpg = path.join(stillsDir, `${s.id}.jpg`);
-    const luma = frameLuma(mp4, mid, jpg);
-    stills.push({scene: s.id, tSec: Math.round(mid * 100) / 100, file: jpg, yavg: luma});
-    check(checks, `visual.still.${s.id}`, fs.existsSync(jpg) && luma !== null && luma > 4,
-      `YAVG=${luma} @${mid.toFixed(2)}s ${luma !== null && luma <= 4 ? "- frame nyaris hitam total" : ""}`);
+    for (const [phase, frac] of STILL_PHASES) {
+      const t = (s.from + s.durationInFrames * frac) / fps;
+      const jpg = path.join(stillsDir, `${s.id}-${phase}.jpg`);
+      const luma = frameLuma(mp4, t, jpg);
+      stills.push({scene: s.id, phase, tSec: Math.round(t * 100) / 100, file: jpg, yavg: luma});
+      check(checks, `visual.still.${s.id}.${phase}`, fs.existsSync(jpg) && luma !== null && luma > 4,
+        `YAVG=${luma} @${t.toFixed(2)}s ${luma !== null && luma <= 4 ? "- frame nyaris hitam total" : ""}`);
+    }
   }
   // Opening frame inspection (frame 0)
   const openJpg = path.join(stillsDir, "opening-frame0.jpg");
@@ -46,7 +54,6 @@ export function qcVisual(id) {
 
   // Contact sheet + cover
   const contact = path.join(workDir, "qc", "contact-sheet.jpg");
-  const n = compile.sceneTimings.length;
   runOk("ffmpeg", ["-y", "-v", "error", "-i", mp4, "-vf",
     `select='not(mod(n\\,${Math.max(1, Math.floor(compile.totalFrames / 12))}))',scale=270:480,tile=4x3`,
     "-frames:v", "1", contact]);
@@ -67,6 +74,6 @@ export function qcVisual(id) {
 
   // Safe zone / overflow: batas teks sudah divalidasi saat validate; stills untuk review manusia.
   check(checks, "visual.safeZoneReview", true,
-    `Batas panjang teks lolos validasi (config/limits.json). Review stills di ${stillsDir} untuk cek safe-zone (L${brand.safeZones.left}/R${brand.safeZones.right}/T${brand.safeZones.top}/B${brand.safeZones.bottomReserve}).`, "warning");
+    `Batas panjang teks lolos validasi (config/limits.json). Review stills early/mid/late di ${stillsDir} untuk cek safe-zone (L${brand.safeZones.left}/R${brand.safeZones.right}/T${brand.safeZones.top}/B${brand.safeZones.bottomReserve}).`, "warning");
   return {checks, stills, contactSheet: contact, cover};
 }
