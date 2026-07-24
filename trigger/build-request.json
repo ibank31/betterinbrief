@@ -1,6 +1,6 @@
 {
   "episode": "SmokeTest_000",
   "requestedBy": "RadjaAgent",
-  "reason": "reproduksi kegagalan v1.6a dengan pelaporan log ke D1",
-  "at": "2026-07-24T16:05:30Z"
+  "reason": "v1.6a SFX + mix v4.1 limiter true-peak-safe (oversample 4x fix overshoot inter-sample)",
+  "at": "2026-07-24T16:14:00Z"
 }
