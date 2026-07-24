@@ -21,7 +21,7 @@ export const CorrectionScene: React.FC<CorrectionSceneProps> = ({eyebrow, miscon
   const accent = s === "orange" ? colors.white : colors.orange;
   const mutedInk = s === "dark" ? colors.gray300 : colors.gray700;
   return <EditorialFrame background={bg} color={ink} world={world} surface={s}>
-    <NarrativeDevice kind={world?.device ?? "decision_graph"} surface={s} />
+    <NarrativeDevice kind={world?.device ?? "decision_graph"} surface={s} seed={world?.seed} />
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 880}}>
       <Eyebrow color={mutedInk}>{eyebrow}</Eyebrow>
       <div style={{marginTop: 94, width: 640, fontSize: typography.size.display, lineHeight: typography.lineHeight.display, letterSpacing: typography.letterSpacing.display, fontWeight: typography.weight.black, color: mutedInk, textDecoration: "line-through", textDecorationColor: accent, textDecorationThickness: 14, opacity: .92}}>{misconception}</div>

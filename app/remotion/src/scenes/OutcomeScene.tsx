@@ -10,7 +10,7 @@ export const OutcomeScene:React.FC<OutcomeSceneProps>=({eyebrow,setup,outcome,co
  const reveal=interpolate(frame,[6,motion.emphasis],[0,1],clamp);
  const q=interpolate(frame,[24,38],[0,1],clamp);
  return <EditorialFrame background={colors.orange} color={colors.black} world={world} surface={surface}>
-  <NarrativeDevice kind={world?.device ?? "priority_signal"} surface={surface ?? "orange"} />
+  <NarrativeDevice kind={world?.device ?? "priority_signal"} surface={surface ?? "orange"} seed={world?.seed} />
   <div style={{position:"absolute",left:safeZones.left,top:safeZones.top,width:880}}>
    <Eyebrow color={colors.black72}>{eyebrow}</Eyebrow>
    <div style={{marginTop:70,maxWidth:760,fontSize:typography.size.title,lineHeight:typography.lineHeight.title,fontWeight:typography.weight.semibold}}>{setup}</div>

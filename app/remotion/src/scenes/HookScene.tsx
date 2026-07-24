@@ -25,13 +25,15 @@ export const HookScene: React.FC<HookSceneProps> = ({eyebrow, statistic, statist
   const displayStatistic = statMatch
     ? `${Math.round(parseInt(statMatch[1], 10) * countEased)}${statMatch[2]}`
     : statistic;
+  // v1.3b: nilai asli statistik diteruskan ke device agar geometrinya jujur-data.
+  const statValue = statMatch ? parseInt(statMatch[1], 10) : null;
   const s = surface ?? "dark";
   const ink = s === "dark" ? colors.white : colors.black;
   const bg = s === "dark" ? colors.black : s === "orange" ? colors.orange : colors.warmWhite;
   const accent = s === "orange" ? colors.white : colors.orange;
   const eyebrowColor = s === "dark" ? colors.gray300 : s === "orange" ? colors.black : colors.gray700;
   return <EditorialFrame background={bg} color={ink} world={world} surface={s}>
-    <NarrativeDevice kind={world?.device ?? "two_tracks"} surface={s} />
+    <NarrativeDevice kind={world?.device ?? "two_tracks"} surface={s} seed={world?.seed} data={statValue === null ? undefined : {values: [statValue], max: statisticSuffix.includes("%") ? 100 : undefined}} />
     <div style={{position: "absolute", left: safeZones.left, top: safeZones.top, width: 820}}>
       <Eyebrow color={eyebrowColor}>{eyebrow}</Eyebrow>
       <div style={{display: "flex", alignItems: "baseline", marginTop: 64, transform: `translateY(${(1-hit)*42}px)`, opacity: hit}}>

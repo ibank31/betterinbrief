@@ -10,7 +10,7 @@ export type TaskBreakdownSceneProps = SceneBaseProps & {eyebrow:string; headline
 export const TaskBreakdownScene:React.FC<TaskBreakdownSceneProps>=({eyebrow,headline,jobTitle,tasks,subtitle,world,surface})=>{
  const frame=useCurrentFrame();
  return <EditorialFrame background={colors.graphite} color={colors.white} world={world} surface={surface}>
-  <NarrativeDevice kind={world?.device ?? "task_system"} surface={surface ?? "dark"} />
+  <NarrativeDevice kind={world?.device ?? "task_system"} surface={surface ?? "dark"} seed={world?.seed} data={{values: tasks.slice(0, 5).map((task) => task.shifts ? 1 : 0)}} />
   <div style={{position:"absolute",left:safeZones.left,top:safeZones.top,width:880}}>
    <Eyebrow color={colors.gray300}>{eyebrow}</Eyebrow>
    <div style={{marginTop:52,maxWidth:800,fontSize:typography.size.headline,lineHeight:typography.lineHeight.headline,fontWeight:typography.weight.black,letterSpacing:typography.letterSpacing.headline}}>{headline}</div>
