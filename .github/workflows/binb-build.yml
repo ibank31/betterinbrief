@@ -17,6 +17,7 @@ jobs:
       EPISODE: ${{ inputs.episode }}
       PEXELS_API_KEY: ${{ secrets.PEXELS_API_KEY }}
       BINB_HOME: /home/runner/binb-home
+      BINB_APP_ROOT: ${{ github.workspace }}
       HF_HUB_DISABLE_XET: 1
     steps:
       - name: Checkout
