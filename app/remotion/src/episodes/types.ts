@@ -140,7 +140,7 @@ export type OutcomeVariant =
 
 export type ClosingBrandVariant = "standard";
 
-/** v1.4a — tipe scene kamus baru memulai hidup dengan satu variant standar. */
+/** v1.4a - tipe scene kamus baru memulai hidup dengan satu variant standar. */
 export type CatalogStandardVariant = "standard";
 
 export type SceneTiming = {
@@ -365,4 +365,49 @@ export type RankingEpisodeScene = EpisodeSceneBase<
   RankingVisual
 >;
 
-export type BeforeAfterEpisodeScene = EpisodeSceneBase
+export type BeforeAfterEpisodeScene = EpisodeSceneBase<
+  "before_after",
+  CatalogStandardVariant,
+  BeforeAfterVisual
+>;
+
+export type ProcessEpisodeScene = EpisodeSceneBase<
+  "process",
+  CatalogStandardVariant,
+  ProcessVisual
+>;
+
+export type QuoteEpisodeScene = EpisodeSceneBase<
+  "quote",
+  CatalogStandardVariant,
+  QuoteVisual
+>;
+
+export type EpisodeRenderScene =
+  | HookEpisodeScene
+  | CorrectionEpisodeScene
+  | DataProofEpisodeScene
+  | TaskBreakdownEpisodeScene
+  | ComparisonEpisodeScene
+  | OutcomeEpisodeScene
+  | ClosingBrandEpisodeScene
+  | TimelineEpisodeScene
+  | RankingEpisodeScene
+  | BeforeAfterEpisodeScene
+  | ProcessEpisodeScene
+  | QuoteEpisodeScene;
+
+export type EpisodeRenderProps = {
+  schemaVersion: "1.1";
+  accountPhase: AccountPhase;
+  contentOrigin: ContentOrigin;
+  episodeId: string;
+  title: string;
+  pillar: ContentPillar;
+  formatFamily: FormatFamily;
+  voice: "af_sarah";
+  musicLane: MusicLane;
+  campaign: CampaignMetadata | null;
+  scenes: readonly EpisodeRenderScene[];
+  captions: readonly CaptionCue[];
+};
