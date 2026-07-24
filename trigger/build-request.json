@@ -1,6 +1,6 @@
 {
   "episode": "job-switch-premium",
   "requestedBy": "RadjaAgent",
-  "reason": "Antrean no. 7: episode kedua topik job switchers vs stayers (Atlanta Fed), run tunggal setelah ai-pay-gap hijau di r23",
-  "at": "2026-07-24T17:02:00Z"
+  "reason": "Rebuild setelah fix runtime.ts: allowedVariants kini memuat 5 tipe scene v1.4a (timeline dkk); run sebelumnya TypeError includes",
+  "at": "2026-07-24T17:12:30Z"
 }
