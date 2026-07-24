@@ -20,6 +20,9 @@ const hashKey = (value: string): number => {
   return h;
 };
 
+// v1.4a: tipe scene kamus baru (timeline, ranking, before_after, process,
+// quote) mendapat lane/device default sendiri; fallback editorial_collage
+// tetap menjaga tipe tak dikenal agar tidak pernah crash render.
 const laneOptionsByType: Record<string, VisualLane[]> = {
   hook: ["object_metaphor", "editorial_collage", "interface_reality"],
   correction: ["editorial_collage", "diagram_world", "editorial_type"],
@@ -28,6 +31,11 @@ const laneOptionsByType: Record<string, VisualLane[]> = {
   comparison: ["diagram_world", "data_theatre", "evidence_desk"],
   outcome: ["editorial_type", "object_metaphor", "cinematic_context"],
   closing_brand: ["editorial_type"],
+  timeline: ["diagram_world", "evidence_desk", "data_theatre"],
+  ranking: ["data_theatre", "diagram_world", "evidence_desk"],
+  before_after: ["editorial_collage", "editorial_type", "diagram_world"],
+  process: ["diagram_world", "interface_reality"],
+  quote: ["evidence_desk", "editorial_type", "cinematic_context"],
 };
 
 const deviceOptionsByType: Record<string, NarrativeDeviceKind[]> = {
@@ -38,6 +46,11 @@ const deviceOptionsByType: Record<string, NarrativeDeviceKind[]> = {
   comparison: ["two_tracks", "decision_graph", "priority_signal"],
   outcome: ["priority_signal", "decision_graph", "evidence_scan"],
   closing_brand: [],
+  timeline: ["decision_graph", "evidence_scan"],
+  ranking: ["priority_signal", "decision_graph"],
+  before_after: ["two_tracks", "evidence_scan"],
+  process: ["task_system", "decision_graph"],
+  quote: ["evidence_scan"],
 };
 
 export const defaultVisualWorld = (
