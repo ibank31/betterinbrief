@@ -1,6 +1,6 @@
 {
-  "episode": "job-switch-premium",
+  "episode": "costco-hot-dog",
   "requestedBy": "RadjaAgent",
-  "reason": "Rebuild setelah fix runtime.ts: allowedVariants kini memuat 5 tipe scene v1.4a (timeline dkk); run sebelumnya TypeError includes",
-  "at": "2026-07-24T17:12:30Z"
+  "reason": "Episode 3: Costco $1.50 hot dog - debut pilar company_founder_strategy, musicLane business_strategy, scene quote/before_after/process, 7 scene",
+  "at": "2026-07-24T17:52:00Z"
 }
