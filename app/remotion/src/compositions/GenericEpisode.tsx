@@ -4,10 +4,14 @@ import {
   Audio,
   Img,
   Sequence,
+  interpolate,
+  random,
+  spring,
   staticFile,
   useCurrentFrame,
+  useVideoConfig,
 } from "remotion";
-import {colors} from "../brand/tokens";
+import {colors, motion} from "../brand/tokens";
 import {logoAssets} from "../brand/logo-assets";
 import type {
   EpisodeRenderProps,
@@ -78,6 +82,45 @@ const LivingDrift: React.FC<React.PropsWithChildren<{
   const scale = zoomIn ? 1 + progress * 0.05 : 1.055 - progress * 0.05;
   return (
     <AbsoluteFill style={{transform: `scale(${scale})`, transformOrigin: "50% 44%"}}>
+      {children}
+    </AbsoluteFill>
+  );
+};
+
+// v1.3c — Kinetika batas scene. Setiap scene MASUK dengan fisika spring
+// (arah di-seed per episodeId-sceneId: atas/kiri/kanan — tidak ada dua
+// episode dengan ritme masuk identik) dan KELUAR dengan dorongan halus pada
+// frame-frame terakhir, menyambung arah entrance scene berikutnya menjadi
+// whip-cut. Transform-only: tanpa fade ke hitam, konten selalu terbaca
+// (QC teks aman). Scene pertama tetap cold-open (tanpa entrance), scene
+// terakhir tanpa dorongan keluar (closing brand berhenti tenang).
+const SceneKinetics: React.FC<React.PropsWithChildren<{
+  seed: string;
+  index: number;
+  last: boolean;
+  durationInFrames: number;
+}>> = ({seed, index, last, durationInFrames, children}) => {
+  const frame = useCurrentFrame();
+  const {fps} = useVideoConfig();
+  const direction = Math.floor(random(seed + ":enter") * 3);
+  const p = index === 0
+    ? 1
+    : spring({frame, fps, config: motion.spring.editorial});
+  const exit = last
+    ? 0
+    : interpolate(
+        frame,
+        [durationInFrames - 9, durationInFrames - 1],
+        [0, 1],
+        {extrapolateLeft: "clamp", extrapolateRight: "clamp"},
+      );
+  const enterX = direction === 1 ? -52 : direction === 2 ? 52 : 0;
+  const enterY = direction === 0 ? 58 : 0;
+  const x = (1 - p) * enterX - exit * enterX * 0.45;
+  const y = (1 - p) * enterY - exit * 26;
+  const scale = 1 - exit * 0.012;
+  return (
+    <AbsoluteFill style={{transform: `translate(${x}px, ${y}px) scale(${scale})`}}>
       {children}
     </AbsoluteFill>
   );
@@ -187,28 +230,35 @@ export const GenericEpisode: React.FC<
             scene.timing.durationInFrames
           }
         >
-          <LivingDrift
+          <SceneKinetics
+            seed={episodeId + "-" + scene.id}
             index={index}
+            last={index === scenes.length - 1}
             durationInFrames={scene.timing.durationInFrames}
           >
-            {index === 0 ? (
-              // Cold open: scene pertama mulai dengan entrance sudah berjalan
-              // agar frame 0 langsung menampilkan konten (aturan brand: hook
-              // mendarat segera, tanpa black opening).
-              <Sequence
-                from={-COLD_OPEN_SKIP_FRAMES}
-                layout="none"
-              >
+            <LivingDrift
+              index={index}
+              durationInFrames={scene.timing.durationInFrames}
+            >
+              {index === 0 ? (
+                // Cold open: scene pertama mulai dengan entrance sudah berjalan
+                // agar frame 0 langsung menampilkan konten (aturan brand: hook
+                // mendarat segera, tanpa black opening).
+                <Sequence
+                  from={-COLD_OPEN_SKIP_FRAMES}
+                  layout="none"
+                >
+                  <VariantSceneFrame scene={scene}>
+                    <EpisodeScene scene={scene} episodeId={episodeId} />
+                  </VariantSceneFrame>
+                </Sequence>
+              ) : (
                 <VariantSceneFrame scene={scene}>
                   <EpisodeScene scene={scene} episodeId={episodeId} />
                 </VariantSceneFrame>
-              </Sequence>
-            ) : (
-              <VariantSceneFrame scene={scene}>
-                <EpisodeScene scene={scene} episodeId={episodeId} />
-              </VariantSceneFrame>
-            )}
-          </LivingDrift>
+              )}
+            </LivingDrift>
+          </SceneKinetics>
           {scene.surface === "light" &&
           scene.type !== "closing_brand" ? (
             <BrandWatermark />
