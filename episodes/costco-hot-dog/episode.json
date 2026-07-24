@@ -1,0 +1,266 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "costco-hot-dog",
+  "title": "The $1.50 Contract - Costco's 40-Year Promise",
+  "status": "draft",
+  "accountPhase": "warmup",
+  "contentOrigin": "original",
+  "pillar": "company_founder_strategy",
+  "formatFamily": "strategy_breakdown",
+  "voice": "af_heart,af_kore",
+  "musicLane": "business_strategy",
+  "campaign": null,
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
+  "sources": [
+    {
+      "sourceId": "SRC01",
+      "url": "https://s201.q4cdn.com/287523651/files/doc_financials/2025/ar/COST-Annual-Report-2025.pdf",
+      "publisher": "Costco Wholesale",
+      "title": "Costco Annual Report 2025",
+      "publishedDate": "2025",
+      "accessedDate": "2026-07-25"
+    },
+    {
+      "sourceId": "SRC02",
+      "url": "https://www.today.com/food/news/costco-hot-dog-deal-price-rcna155211",
+      "publisher": "TODAY",
+      "title": "Costco exec responds to rumors its hot dog combo price will increase",
+      "publishedDate": "2024-06-03",
+      "accessedDate": "2026-07-25"
+    },
+    {
+      "sourceId": "SRC03",
+      "url": "https://www.mashed.com/2096043/costco-hot-dog-soda-combo-sales-2025/",
+      "publisher": "Mashed",
+      "title": "The Costco Food Court Classic That Sold 245 Million Units In 2025",
+      "publishedDate": "2026-02-13",
+      "accessedDate": "2026-07-25"
+    },
+    {
+      "sourceId": "SRC04",
+      "url": "https://www.chowhound.com/2094755/costco-hot-dog-soda-combos-sold-2025/",
+      "publisher": "Chowhound",
+      "title": "The Whopping Number Of Hot Dog And Soda Combos Costco Sold In 2025",
+      "publishedDate": "2026",
+      "accessedDate": "2026-07-25"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "C01",
+      "claim": "Costco's hot dog and soda combo has cost $1.50 since 1985; fiscal year 2025 marked the offering's 40th anniversary.",
+      "sourceId": "SRC03",
+      "verified": true
+    },
+    {
+      "claimId": "C02",
+      "claim": "Costco sold a record 245.1 million hot dog and soda combos in fiscal year 2025, per figures from its January 2026 annual shareholder meeting.",
+      "sourceId": "SRC03",
+      "verified": true
+    },
+    {
+      "claimId": "C03",
+      "claim": "When then-CEO Craig Jelinek proposed raising the combo price to $1.75, co-founder Jim Sinegal replied: 'If you raise the effing hot dog, I will kill you. Figure it out.'",
+      "sourceId": "SRC02",
+      "verified": true
+    },
+    {
+      "claimId": "C04",
+      "claim": "Costco collected $5.323 billion in membership fees in fiscal 2025, with US and Canada member renewal rates of 92.3%.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C05",
+      "claim": "Adjusted for inflation, the 1985-priced $1.50 combo would cost more than $4 today.",
+      "sourceId": "SRC04",
+      "verified": true
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "contrarian",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "Costco loses money on its most famous product. On purpose. A hot dog and a soda: one dollar fifty. The price hasn't moved in forty years.",
+      "claims": [
+        "C01"
+      ],
+      "visual": {
+        "eyebrow": "STRATEGY · COSTCO",
+        "statistic": "40",
+        "statisticSuffix": "YRS",
+        "headline": "Losing money on purpose since 1985."
+      },
+      "visualAssets": [
+        {
+          "assetId": "A01",
+          "role": "context",
+          "kind": "stock_media",
+          "rightsStatus": "permission_verified",
+          "file": "assets/S01-backdrop.mp4",
+          "treatment": "hero",
+          "editorialPurpose": "Hero footage lorong toko grosir besar dengan troli - konteks dunia warehouse club tempat strategi ini hidup",
+          "licenseUrl": "https://www.pexels.com/license/",
+          "fetch": {
+            "provider": "pexels",
+            "type": "video",
+            "query": "warehouse superstore shopping carts aisle"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "role": "context",
+      "type": "quote",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "When the new CEO tried to raise it to a dollar seventy-five, co-founder Jim Sinegal gave an answer that became company law: touch the hot dog, and I will kill you. Figure it out.",
+      "claims": [
+        "C03"
+      ],
+      "visual": {
+        "eyebrow": "THE FOUNDER'S ORDER",
+        "quote": "If you raise the effing hot dog, I will kill you. Figure it out.",
+        "attribution": "Jim Sinegal, Costco co-founder",
+        "source": "SOURCE · CEO CRAIG JELINEK, 2018 INTERVIEW"
+      }
+    },
+    {
+      "id": "S03",
+      "role": "evidence",
+      "type": "before_after",
+      "variant": "standard",
+      "surface": "dark",
+      "motion": "sharp_correction",
+      "narration": "Nineteen eighty-five: one fifty. Today: still one fifty. Inflation says it should cost over four dollars. Last year, members bought a record 245 million of them.",
+      "claims": [
+        "C01",
+        "C02",
+        "C05"
+      ],
+      "visual": {
+        "eyebrow": "40 YEARS APART",
+        "beforeLabel": "1985",
+        "beforeText": "Hot dog + soda combo: $1.50",
+        "afterLabel": "2026",
+        "afterText": "Hot dog + soda combo: still $1.50",
+        "subtitle": "Inflation-adjusted, it should cost over $4. Sold: 245M last year."
+      }
+    },
+    {
+      "id": "S04",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "So where's the profit? The membership desk. Ninety-two percent of North American members renew every year. Five point three billion dollars in fees, straight to the bottom line.",
+      "claims": [
+        "C04"
+      ],
+      "visual": {
+        "eyebrow": "WHERE THE MONEY LIVES",
+        "value": 92.3,
+        "decimals": 1,
+        "suffix": "%",
+        "label": "of US & Canada members renew every year",
+        "source": "SOURCE · COSTCO ANNUAL REPORT 2025",
+        "subtitle": "Membership fees: $5.3 billion in fiscal 2025."
+      },
+      "visualAssets": [
+        {
+          "assetId": "A01",
+          "role": "context",
+          "kind": "stock_media",
+          "rightsStatus": "permission_verified",
+          "file": "assets/S04-backdrop.mp4",
+          "treatment": "backdrop",
+          "editorialPurpose": "Backdrop halus dompet dan kartu member - mendukung klaim iuran keanggotaan sebagai sumber laba",
+          "licenseUrl": "https://www.pexels.com/license/",
+          "fetch": {
+            "provider": "pexels",
+            "type": "video",
+            "query": "wallet credit card paying cashier"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S05",
+      "role": "mechanism",
+      "type": "process",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "stacked_build",
+      "narration": "That's the machine. Lose money where everyone can see it. Earn trust on every price tag in the building. Then collect the real profit in membership fees. The hot dog isn't food - it's marketing you can eat.",
+      "visual": {
+        "eyebrow": "THE PLAYBOOK",
+        "headline": "How a loss becomes a moat.",
+        "steps": [
+          {
+            "label": "Lose money on the most visible item"
+          },
+          {
+            "label": "Members trust every other price tag"
+          },
+          {
+            "label": "Collect $5.3B in membership fees"
+          }
+        ]
+      }
+    },
+    {
+      "id": "S06",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "statement",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "The lesson travels far beyond retail. Pick one visible promise, and never break it. Trust compounds faster than margin. So: what's your one-fifty?",
+      "visual": {
+        "eyebrow": "THE LESSON",
+        "setup": "Costco doesn't sell hot dogs.",
+        "outcome": "TRUST",
+        "comparison": "> MARGIN",
+        "question": "WHAT'S YOUR $1.50?",
+        "subtitle": "One visible promise beats a thousand ads."
+      }
+    },
+    {
+      "id": "S07",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Find the promise you'll never break."
+      }
+    }
+  ],
+  "packaging": {
+    "youtubeTitle": "Costco Loses Money on Every $1.50 Hot Dog - On Purpose. Here's the Strategy.",
+    "instagramCaption": "The $1.50 contract. 🌭\n\nCostco's hot dog + soda combo has cost $1.50 since 1985. Adjusted for inflation it should be over $4. They lose money on it - on purpose.\n\nWhen the CEO tried to raise it to $1.75, co-founder Jim Sinegal replied: 'If you raise the effing hot dog, I will kill you. Figure it out.'\n\nThe playbook —\n\n🔸 Lose money on the most visible item\n🔸 Members trust every other price tag\n🔸 Collect the real profit at the membership desk: $5.3B in fees, 92.3% renewal\n\n245 MILLION combos sold last year. The hot dog isn't food - it's marketing you can eat.\n\nWhat's the one promise your business never breaks? 👇\n\nSources: Costco Annual Report 2025; TODAY; company shareholder meeting figures\n\n#businessstrategy #costco #branding #pricing #entrepreneur #marketing #businesstips #founderstories #customerloyalty",
+    "tiktokCaption": "Costco loses money on every $1.50 hot dog - on purpose 🌭 245 million sold last year. The strategy is genius. (Sources: Costco Annual Report 2025, TODAY)\n\n#businesstok #costco #strategy #branding #learnontiktok #marketing #founderstories #moneytok",
+    "hashtags": [
+      "costco",
+      "strategy",
+      "branding",
+      "pricing",
+      "trust"
+    ]
+  }
+}
