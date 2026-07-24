@@ -23,6 +23,13 @@ const regressionDefaults: Record<
   comparison: "split",
   outcome: "statement",
   closing_brand: "standard",
+  // v1.4a - tipe kamus baru: variant "standard" merender komponen scene
+  // apa adanya (self-contained), tanpa geometry frame tambahan.
+  timeline: "standard",
+  ranking: "standard",
+  before_after: "standard",
+  process: "standard",
+  quote: "standard",
 };
 
 const accents: Record<SceneSurface, string> = {
