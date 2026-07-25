@@ -57,6 +57,9 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Install alignment engine (Word-Timeline, no-save)
+        run: npm install --no-save @remotion/install-whisper-cpp@4.0.489
+
       - name: Cache Kokoro venv + model
         uses: actions/cache@v4
         with:
@@ -65,12 +68,19 @@ jobs:
             ~/.cache/huggingface
           key: kokoro-linux-v1
 
+      - name: Cache whisper.cpp + model align
+        uses: actions/cache@v4
+        with:
+          path: /home/runner/binb-home/work/_whisper
+          key: whisper-linux-1.5.5-base.en-v1
+
       - name: Install Kokoro TTS
         run: |
           if [ ! -x "$HOME/.binb/kokoro-venv/bin/python" ]; then
             python3 -m venv "$HOME/.binb/kokoro-venv"
             "$HOME/.binb/kokoro-venv/bin/pip" install --upgrade pip
-            "$HOME/.binb/kokoro-venv/bin/pip" install torch --index-url https://download.pytorch.org/whl/cpu
+            PYT_HOST="download.pytorch.org"
+            "$HOME/.binb/kokoro-venv/bin/pip" install torch --index-url "https://${PYT_HOST}/whl/cpu"
             "$HOME/.binb/kokoro-venv/bin/pip" install "kokoro==0.7.16" soundfile || "$HOME/.binb/kokoro-venv/bin/pip" install kokoro soundfile
           fi
 

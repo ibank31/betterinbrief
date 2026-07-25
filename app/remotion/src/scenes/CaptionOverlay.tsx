@@ -1,12 +1,20 @@
 /**
  * Kinetic captions — satu-satunya lapisan narasi di layar.
- * Kata muncul satu per satu mengikuti perkiraan tempo bicara; kata aktif
- * di-highlight. Layout stabil: semua kata dirender sejak awal cue dengan
- * opacity 0 sehingga line-wrap tidak melompat saat kata muncul.
+ * Kata muncul satu per satu. Jika cue membawa `words` (Word-Timeline Engine:
+ * timestamp nyata per kata dari whisper.cpp), tiap kata pop TEPAT saat
+ * diucapkan — karaoke sungguhan. Tanpa `words`, fallback ke perkiraan tempo
+ * proporsional panjang kata (perilaku lama). Layout stabil: semua kata
+ * dirender sejak awal cue dengan opacity 0 sehingga line-wrap tidak melompat.
  */
 import React from "react";
 import {interpolate, useCurrentFrame} from "remotion";
 import {colors, typography} from "../brand/tokens";
+
+export type CaptionWord = {
+  text: string;
+  startFrame: number;
+  endFrame: number;
+};
 
 export type CaptionCue = {
   startFrame: number;
@@ -15,6 +23,7 @@ export type CaptionCue = {
   accent?: string;
   accentColor?: string;
   surface?: "dark" | "light" | "orange";
+  words?: readonly CaptionWord[];
 };
 
 export type CaptionOverlayProps = {
@@ -28,8 +37,9 @@ const clamp = {
 
 type WordTiming = {word: string; at: number};
 
-// Bagi durasi cue ke tiap kata proporsional dengan panjangnya. Kata terakhir
-// selesai muncul di ~70% durasi cue supaya sempat terbaca utuh sebelum ganti.
+// Fallback ESTIMASI: bagi durasi cue ke tiap kata proporsional dengan
+// panjangnya. Kata terakhir selesai muncul di ~70% durasi cue supaya sempat
+// terbaca utuh sebelum ganti.
 const wordTimings = (cue: CaptionCue): WordTiming[] => {
   const words = cue.text.trim().split(/\s+/);
   const total = words.reduce((acc, w) => acc + w.length + 1, 0) || 1;
@@ -42,6 +52,10 @@ const wordTimings = (cue: CaptionCue): WordTiming[] => {
   });
 };
 
+// Word-Timeline: pakai frame mulai nyata tiap kata (sudah absolut).
+const alignedTimings = (words: readonly CaptionWord[]): WordTiming[] =>
+  words.map((w) => ({word: w.text, at: w.startFrame}));
+
 export const CaptionOverlay: React.FC<CaptionOverlayProps> = ({cues}) => {
   const frame = useCurrentFrame();
   const cue = cues.find(
@@ -51,7 +65,10 @@ export const CaptionOverlay: React.FC<CaptionOverlayProps> = ({cues}) => {
     return null;
   }
 
-  const timings = wordTimings(cue);
+  const timings =
+    cue.words && cue.words.length > 0
+      ? alignedTimings(cue.words)
+      : wordTimings(cue);
   const onLight = cue.surface === "light";
   const onOrange = cue.surface === "orange";
   const baseColor = onLight || onOrange ? colors.black : colors.white;
