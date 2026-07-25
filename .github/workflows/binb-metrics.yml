@@ -18,7 +18,7 @@ jobs:
       GRAPH_VERSION: v23.0
       BUFFER_HOST: api.buffer.com
       YT_HOST: www.googleapis.com
-      YT_HANDLE: betterinbrief
+      YT_HANDLE: betterinbriefmedia
     steps:
       - name: Checkout
         uses: actions/checkout@v4
