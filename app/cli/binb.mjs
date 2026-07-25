@@ -10,6 +10,7 @@ import {P, SYSTEM_DIR, homeDir, freeGb, gitInfo, loadConfig, readJson, sha256Fil
 import {validateEpisode} from "../pipeline/validate.mjs";
 import {lockEpisode, lockedCoreSha} from "../pipeline/lock.mjs";
 import {runTts} from "../pipeline/tts.mjs";
+import {runAlign} from "../pipeline/align.mjs";
 import {compileEpisode} from "../pipeline/compile.mjs";
 import {renderEpisode, renderPreview} from "../pipeline/render.mjs";
 import {mixEpisode} from "../pipeline/mix.mjs";
@@ -20,7 +21,7 @@ import {migrateOld} from "../pipeline/migrate.mjs";
 import {doctor} from "./lib/doctor.mjs";
 import {newEpisode, clean, archiveEpisode, diagnose} from "./lib/misc.mjs";
 
-const PIPELINE_VERSION = "1.0.0";
+const PIPELINE_VERSION = "1.1.0";
 
 function versionOf(pkg) {
   try {
@@ -108,7 +109,8 @@ async function cmdBuild(id, flags) {
   await stage("05-audio-probe", () => {
     console.log(tts.scenes.map((s) => `${s.sceneId}: ${s.durationSec.toFixed(2)}s @${s.sampleRate}Hz peak ${s.peakDb}dB${s.generated ? "" : " (cache)"}`).join("\n"));
   });
-  await stage("06-compile", () => compileEpisode(id, tts));
+  const align = await stage("05b-align", () => runAlign(id, tts));
+  await stage("06-compile", () => compileEpisode(id, tts, align));
   await stage("07-render", () => renderEpisode(id));
   await stage("08-mix", () => mixEpisode(id));
   await stage("09-encode", () => encodeEpisode(id));
@@ -142,7 +144,7 @@ async function cmdTest() {
   fs.writeFileSync(path.join(dir, "sources", "smoke-evidence.txt"), "fixture evidence untuk smoke test\n");
   fs.rmSync(P.lockedJson(id), {force: true});
   await cmdBuild(id, ["--force-relock"]);
-  console.log("\nSMOKE TEST LULUS: pipeline TTS->render->mix->encode->QC->package bekerja di perangkat ini.");
+  console.log("\nSMOKE TEST LULUS: pipeline TTS->align->render->mix->encode->QC->package bekerja di perangkat ini.");
 }
 
 function parsePreviewFlags(tokens) {
