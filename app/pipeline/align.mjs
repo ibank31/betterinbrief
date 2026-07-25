@@ -1,10 +1,21 @@
-// align.mjs — Word-Timeline Engine (upgrade "human pacing" fase 1).
+// align.mjs — Word-Timeline Engine v2 (upgrade "human pacing" fase 1).
 //
 // Setelah TTS, setiap WAV scene ditranskripsi ulang dengan whisper.cpp
-// (token-level DTW timestamps) lalu dipetakan kembali ke kata-kata narasi
+// (token-level timestamps) lalu dipetakan kembali ke kata-kata narasi
 // tampilan (yang memakai digit/simbol). Hasilnya align-manifest.json:
 // timestamp mulai/selesai per kata narasi. compile.mjs memakai ini untuk
 // caption kinetik yang mengikuti suara NYATA, bukan estimasi panjang huruf.
+//
+// v2 — perbaikan presisi berdasarkan audit sinkron r29:
+// 1. Pemetaan kata lisan -> kata tampilan memakai alignment DP
+//    (edit-distance, gaya Needleman-Wunsch), BUKAN kursor proporsional.
+//    Saat whisper mendengar jumlah kata berbeda dari teks (mis. "$1.50"
+//    -> "a dollar fifty"), error tidak lagi menyebar ke seluruh scene.
+// 2. Snap-ke-onset: WAV narasi per scene adalah suara bersih tanpa musik,
+//    jadi awal tiap kata dikoreksi ke onset energi vokal terdekat (jitter
+//    timestamp whisper +-100-300ms terkunci kembali ke suara nyata).
+// 3. Model default naik ke small.en (config/alignment.json) — timestamp
+//    base.en terbukti terlalu jittery untuk karaoke.
 //
 // Desain aman-spike:
 // - config/alignment.json enabled=false mematikan stage ini sepenuhnya.
@@ -23,41 +34,182 @@ const r3 = (x) => Math.round(x * 1000) / 1000;
 
 export const whisperDir = () => path.join(path.dirname(P.ttsCache()), "_whisper");
 
-// Perkiraan jumlah kata lisan untuk satu kata tampilan (mis. "62%" -> 2 kata:
-// "sixty-two percent"). Dipakai sebagai bobot pemetaan token whisper ->
-// kata tampilan. Aproksimasi per-kata; pemetaan proporsional menoleransi
-// selisih kecil.
-function spokenWeight(displayWord) {
-  const spoken = normalizeSpeechText(displayWord).text
-    .replace(/[.,;:!?]+$/g, "").trim();
-  if (!spoken) return 1;
-  return Math.max(1, spoken.split(/\s+/).length);
+function normToken(s) {
+  return String(s).toLowerCase().replace(/[^a-z0-9']/g, "");
 }
 
-// Petakan kata lisan (whisper) -> kata tampilan (narasi) secara proporsional
-// berdasarkan bobot ekspansi. Selalu menghasilkan tepat displayWords.length
-// entri dengan waktu monotonik naik.
+function lev(a, b) {
+  const m = a.length, n = b.length;
+  if (!m) return n;
+  if (!n) return m;
+  let prev = Array.from({length: n + 1}, (_, j) => j);
+  for (let i = 1; i <= m; i++) {
+    const cur = [i];
+    for (let j = 1; j <= n; j++) {
+      cur[j] = Math.min(prev[j] + 1, cur[j - 1] + 1, prev[j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+    }
+    prev = cur;
+  }
+  return prev[n];
+}
+
+function tokenCost(a, b) {
+  if (!a || !b) return 1;
+  if (a === b) return 0;
+  if (a.startsWith(b) || b.startsWith(a)) return 0.25;
+  const d = lev(a, b) / Math.max(a.length, b.length);
+  return d <= 0.34 ? 0.3 : 1;
+}
+
+// Token lisan yang DIHARAPKAN untuk tiap kata tampilan (mis. "62%" ->
+// ["sixtytwo", "percent"]), dengan indeks kata tampilan pemiliknya.
+function expectedTokens(displayWords) {
+  const toks = [];
+  displayWords.forEach((w, i) => {
+    const spoken = normalizeSpeechText(w).text.replace(/[.,;:!?]+$/g, "").trim();
+    let parts = (spoken ? spoken.split(/\s+/) : [w]).map(normToken).filter(Boolean);
+    if (!parts.length) parts = [normToken(w) || "x"];
+    for (const p of parts) toks.push({displayIdx: i, token: p});
+  });
+  return toks;
+}
+
+// Petakan kata lisan (whisper) -> kata tampilan (narasi) memakai DP
+// edit-distance. Selalu menghasilkan tepat displayWords.length entri dengan
+// waktu mulai monotonik naik; kata tanpa pasangan diinterpolasi di antara
+// tetangga yang punya timestamp.
 export function mapSpokenToDisplay(displayWords, spokenWords) {
-  const weights = displayWords.map(spokenWeight);
-  const totalW = weights.reduce((a, b) => a + b, 0) || 1;
-  const S = spokenWords.length;
+  const exp = expectedTokens(displayWords);
+  const spk = spokenWords.map((s) => ({...s, norm: normToken(s.text)}));
+  const N = exp.length, M = spk.length;
+  const GAP = 0.75;
+  const dp = Array.from({length: N + 1}, () => new Float64Array(M + 1));
+  const bt = Array.from({length: N + 1}, () => new Uint8Array(M + 1));
+  for (let i = 1; i <= N; i++) { dp[i][0] = i * GAP; bt[i][0] = 1; }
+  for (let j = 1; j <= M; j++) { dp[0][j] = j * GAP; bt[0][j] = 2; }
+  for (let i = 1; i <= N; i++) {
+    for (let j = 1; j <= M; j++) {
+      const cDiag = dp[i - 1][j - 1] + tokenCost(exp[i - 1].token, spk[j - 1].norm);
+      const cUp = dp[i - 1][j] + GAP;
+      const cLeft = dp[i][j - 1] + GAP;
+      if (cDiag <= cUp && cDiag <= cLeft) { dp[i][j] = cDiag; bt[i][j] = 3; }
+      else if (cUp <= cLeft) { dp[i][j] = cUp; bt[i][j] = 1; }
+      else { dp[i][j] = cLeft; bt[i][j] = 2; }
+    }
+  }
+  const acc = displayWords.map(() => null);
+  let i = N, j = M;
+  while (i > 0 || j > 0) {
+    const move = i === 0 ? 2 : j === 0 ? 1 : bt[i][j];
+    if (move === 3) {
+      const di = exp[i - 1].displayIdx;
+      const s = spk[j - 1];
+      if (!acc[di]) acc[di] = {startSec: s.startMs / 1000, endSec: s.endMs / 1000};
+      else {
+        acc[di].startSec = Math.min(acc[di].startSec, s.startMs / 1000);
+        acc[di].endSec = Math.max(acc[di].endSec, s.endMs / 1000);
+      }
+      i--; j--;
+    } else if (move === 1) i--;
+    else j--;
+  }
+  // Interpolasi kata tanpa pasangan di antara jangkar bertimestamp.
+  let lastKnownEnd = 0;
+  let k = 0;
+  while (k < acc.length) {
+    if (acc[k]) { lastKnownEnd = acc[k].endSec; k++; continue; }
+    let e = k;
+    while (e < acc.length && !acc[e]) e++;
+    const startBound = lastKnownEnd;
+    const endBound = e < acc.length ? acc[e].startSec : startBound + 0.25 * (e - k);
+    const span = Math.max(endBound - startBound, 0.02 * (e - k));
+    for (let q = k; q < e; q++) {
+      acc[q] = {
+        startSec: startBound + (span * (q - k)) / (e - k),
+        endSec: startBound + (span * (q - k + 1)) / (e - k),
+      };
+    }
+    lastKnownEnd = acc[e - 1].endSec;
+    k = e;
+  }
   const out = [];
-  let acc = 0;
-  let cursor = 0;
-  for (let i = 0; i < displayWords.length; i++) {
-    const start = cursor;
-    acc += weights[i];
-    let stop = i === displayWords.length - 1 ? S : Math.round((acc / totalW) * S);
-    stop = Math.min(S, Math.max(stop, start + 1));
-    const first = spokenWords[Math.min(start, S - 1)];
-    const last = spokenWords[Math.min(stop - 1, S - 1)];
-    const prevEnd = out.length ? out[out.length - 1].endSec : 0;
-    const startSec = Math.max(prevEnd, first.startMs / 1000);
-    const endSec = Math.max(startSec + 0.01, last.endMs / 1000);
-    out.push({text: displayWords[i], startSec: r3(startSec), endSec: r3(endSec)});
-    cursor = Math.min(stop, S);
+  let prevStart = -1;
+  for (let q = 0; q < acc.length; q++) {
+    const s = Math.max(acc[q].startSec, prevStart + 0.01);
+    const e2 = Math.max(acc[q].endSec, s + 0.01);
+    out.push({text: displayWords[q], startSec: r3(s), endSec: r3(e2)});
+    prevStart = s;
   }
   return out;
+}
+
+// Deteksi onset vokal dari WAV 16k mono PCM s16le (suara narasi bersih,
+// tanpa musik): RMS per 10ms, onset = transisi hening -> suara.
+export function detectOnsets(wavPath) {
+  const buf = fs.readFileSync(wavPath);
+  if (buf.length < 44 || buf.toString("ascii", 0, 4) !== "RIFF" || buf.toString("ascii", 8, 12) !== "WAVE") return [];
+  let pos = 12, sr = 16000, data = null;
+  while (pos + 8 <= buf.length) {
+    const cid = buf.toString("ascii", pos, pos + 4);
+    const size = buf.readUInt32LE(pos + 4);
+    if (cid === "fmt " && pos + 16 <= buf.length) sr = buf.readUInt32LE(pos + 12);
+    if (cid === "data") { data = buf.subarray(pos + 8, Math.min(buf.length, pos + 8 + size)); break; }
+    pos += 8 + size + (size % 2);
+  }
+  if (!data || !sr) return [];
+  const n = Math.floor(data.length / 2);
+  const hop = Math.max(1, Math.round(sr * 0.01));
+  const frames = Math.floor(n / hop);
+  if (frames < 5) return [];
+  const rms = new Float64Array(frames);
+  let peak = 0;
+  for (let f = 0; f < frames; f++) {
+    let acc2 = 0;
+    for (let s = f * hop; s < (f + 1) * hop; s++) {
+      const v = data.readInt16LE(s * 2) / 32768;
+      acc2 += v * v;
+    }
+    rms[f] = Math.sqrt(acc2 / hop);
+    if (rms[f] > peak) peak = rms[f];
+  }
+  const thr = Math.max(peak * 0.07, 0.004);
+  const onsets = [];
+  let below = 3;
+  for (let f = 0; f < frames; f++) {
+    if (rms[f] < thr) { below++; continue; }
+    if (below >= 3) onsets.push(r3(f * 0.01));
+    below = 0;
+  }
+  return onsets;
+}
+
+// Koreksi awal kata ke onset vokal terdekat (jendela +-windowSec). Tiap
+// onset dipakai maksimal satu kali; urutan waktu tetap monotonik.
+export function snapToOnsets(words, onsets, windowSec = 0.18) {
+  if (!onsets.length) return {words: words.map((w) => ({...w})), snapped: 0};
+  const out = words.map((w) => ({...w}));
+  let snapped = 0;
+  let oi = 0;
+  for (let q = 0; q < out.length; q++) {
+    let best = -1, bestD = windowSec + 1;
+    for (let k = oi; k < onsets.length; k++) {
+      const d = Math.abs(onsets[k] - out[q].startSec);
+      if (d < bestD) { bestD = d; best = k; }
+      if (onsets[k] > out[q].startSec + windowSec) break;
+    }
+    if (best >= 0 && bestD <= windowSec) {
+      out[q].startSec = onsets[best];
+      oi = best + 1;
+      snapped++;
+    }
+  }
+  let prevStart = -1;
+  for (let q = 0; q < out.length; q++) {
+    out[q].startSec = r3(Math.max(out[q].startSec, prevStart + 0.01));
+    out[q].endSec = r3(Math.max(out[q].endSec, out[q].startSec + 0.01));
+    prevStart = out[q].startSec;
+  }
+  return {words: out, snapped};
 }
 
 async function ensureWhisper(api, cfg) {
@@ -105,6 +257,7 @@ export async function runAlign(id, ttsManifest) {
       "-i", entry.wav, "-ar", "16000", "-ac", "1", "-c:a", "pcm_s16le", wav16]);
     let words = null;
     let spokenCount = 0;
+    let snappedCount = 0;
     let transcript = "";
     try {
       const whisperCppOutput = await api.transcribe({
@@ -129,23 +282,32 @@ export async function runAlign(id, ttsManifest) {
       transcript = spoken.map((s) => s.text).join(" ");
       if (spoken.length > 0 && displayWords.length > 0) {
         const mapped = mapSpokenToDisplay(displayWords, spoken);
+        const onsets = detectOnsets(wav16);
+        const snapRes = snapToOnsets(mapped, onsets);
+        snappedCount = snapRes.snapped;
         const durLimit = entry.durationSec;
-        words = mapped.map((w) => ({
-          ...w,
-          startSec: r3(Math.min(w.startSec, durLimit)),
-          endSec: r3(Math.min(Math.max(w.endSec, w.startSec + 0.01), durLimit)),
-        }));
+        let prevStart = -1;
+        words = snapRes.words.map((w) => {
+          const s = Math.max(Math.min(w.startSec, durLimit), prevStart + 0.01);
+          prevStart = s;
+          return {
+            text: w.text,
+            startSec: r3(s),
+            endSec: r3(Math.min(Math.max(w.endSec, s + 0.01), Math.max(durLimit, s + 0.01))),
+          };
+        });
       }
     } catch (e) {
       if (cfg.required) throw new Error(`align gagal untuk ${entry.sceneId}: ${e.message}`);
       log(`align: ${entry.sceneId} gagal (${e.message}) -> scene ini pakai caption ESTIMASI`);
     }
-    if (words) log(`align: ${id}/${entry.sceneId} ok (${spokenCount} kata lisan -> ${words.length} kata tampilan)`);
+    if (words) log(`align: ${id}/${entry.sceneId} ok (${spokenCount} kata lisan -> ${words.length} kata tampilan, snap ${snappedCount} kata ke onset)`);
     scenes.push({
       sceneId: entry.sceneId,
       wavSha256: entry.wavSha256,
       displayWordCount: displayWords.length,
       spokenWordCount: spokenCount,
+      snappedWordCount: snappedCount,
       transcript,
       words,
     });
@@ -153,6 +315,7 @@ export async function runAlign(id, ttsManifest) {
   const manifest = {
     episodeId: id,
     engine: "whisper.cpp",
+    mappingEngine: "dp-v2+onset-snap",
     model: cfg.model,
     whisperVersion: cfg.whisperVersion,
     generatedAt: new Date().toISOString(),

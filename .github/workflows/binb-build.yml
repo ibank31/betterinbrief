@@ -72,7 +72,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: /home/runner/binb-home/work/_whisper
-          key: whisper-linux-1.5.5-base.en-v1
+          key: whisper-linux-1.5.5-small.en-v1
 
       - name: Install Kokoro TTS
         run: |
