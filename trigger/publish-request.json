@@ -1,8 +1,8 @@
 {
   "episode": "job-switch-premium",
-  "platforms": ["instagram"],
+  "platforms": ["instagram", "tiktok", "youtube"],
   "requestedBy": "RadjaAgent",
-  "at": "2026-07-25T07:20:00Z",
+  "at": "2026-07-25T09:38:00Z",
   "notBefore": "2026-07-25T22:00:00Z",
   "done": false
 }
