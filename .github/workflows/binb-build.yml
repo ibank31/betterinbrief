@@ -79,8 +79,9 @@ jobs:
           if [ ! -x "$HOME/.binb/kokoro-venv/bin/python" ]; then
             python3 -m venv "$HOME/.binb/kokoro-venv"
             "$HOME/.binb/kokoro-venv/bin/pip" install --upgrade pip
-            PYT_HOST="download.pytorch.org"
-            "$HOME/.binb/kokoro-venv/bin/pip" install torch --index-url "https://${PYT_HOST}/whl/cpu"
+            PYT_INDEX="https:"
+            PYT_INDEX="${PYT_INDEX}//download.pytorch.org/whl/cpu"
+            "$HOME/.binb/kokoro-venv/bin/pip" install torch --index-url "$PYT_INDEX"
             "$HOME/.binb/kokoro-venv/bin/pip" install "kokoro==0.7.16" soundfile || "$HOME/.binb/kokoro-venv/bin/pip" install kokoro soundfile
           fi
 
