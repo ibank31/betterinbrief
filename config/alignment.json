@@ -1,0 +1,7 @@
+{
+  "enabled": true,
+  "required": false,
+  "engine": "whisper.cpp",
+  "whisperVersion": "1.5.5",
+  "model": "base.en"
+}
