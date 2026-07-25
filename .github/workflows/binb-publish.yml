@@ -5,6 +5,10 @@ on:
       episode:
         description: Episode ID, contoh costco-hot-dog (langsung tayang, abaikan jadwal)
         required: true
+      platforms:
+        description: Platform dipisah koma (instagram,tiktok,youtube)
+        required: false
+        default: instagram
   schedule:
     - cron: "5 22 * * *"
   push:
@@ -21,14 +25,17 @@ jobs:
       contents: write
     env:
       EPISODE: ${{ inputs.episode }}
+      PLATFORMS_INPUT: ${{ inputs.platforms }}
       IG_USER_ID: ${{ secrets.IG_USER_ID }}
       IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: "2336f3c9ddcd5227f2493258fc355327"
       R2_PUBLIC_BASE: ${{ vars.R2_PUBLIC_BASE }}
       R2_BUCKET: binb-publish
       GRAPH_HOST: graph.instagram.com
       GRAPH_VERSION: v23.0
+      BUFFER_HOST: api.buffer.com
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Checkout
@@ -46,7 +53,8 @@ jobs:
           echo "GRAPH=$GRAPH" >> "$GITHUB_ENV"
           if [ -n "$EPISODE" ]; then
             echo "SOURCE=dispatch" >> "$GITHUB_ENV"
-            echo "Episode dari dispatch (langsung tayang): $EPISODE"
+            echo "PLATFORMS=${PLATFORMS_INPUT:-instagram}" >> "$GITHUB_ENV"
+            echo "Episode dari dispatch (langsung tayang): $EPISODE (platform: ${PLATFORMS_INPUT:-instagram})"
             exit 0
           fi
           echo "SOURCE=trigger" >> "$GITHUB_ENV"
@@ -73,38 +81,37 @@ jobs:
             echo "SKIP=true" >> "$GITHUB_ENV"
             exit 0
           fi
+          PLAT=$(node -p "const t=JSON.parse(require('fs').readFileSync('trigger/publish-request.json','utf8')); (t.platforms && t.platforms.length ? t.platforms : ['instagram']).join(',')")
           echo "EPISODE=$EP" >> "$GITHUB_ENV"
-          echo "Episode dari antrean: $EP (notBefore=$NB, jatuh tempo)"
+          echo "PLATFORMS=$PLAT" >> "$GITHUB_ENV"
+          echo "Episode dari antrean: $EP (notBefore=$NB, jatuh tempo, platform: $PLAT)"
 
       - name: Validasi prasyarat
         if: env.SKIP != 'true'
         run: |
           MISSING=""
-          [ -z "$IG_ACCESS_TOKEN" ] && MISSING="$MISSING IG_ACCESS_TOKEN(secret)"
+          case "$PLATFORMS" in *instagram*) [ -z "$IG_ACCESS_TOKEN" ] && MISSING="$MISSING IG_ACCESS_TOKEN(secret)";; esac
+          case "$PLATFORMS" in *tiktok*|*youtube*) [ -z "$BUFFER_API_KEY" ] && MISSING="$MISSING BUFFER_API_KEY(secret)";; esac
           [ -z "$R2_PUBLIC_BASE" ] && MISSING="$MISSING R2_PUBLIC_BASE(variable)"
           if [ -n "$MISSING" ]; then
             echo "ERROR: konfigurasi belum lengkap:$MISSING"
             exit 1
           fi
-          echo "Prasyarat lengkap."
+          echo "Prasyarat lengkap untuk platform: $PLATFORMS"
 
       - name: Resolusi akun Instagram dari token
-        if: env.SKIP != 'true'
+        if: env.SKIP != 'true' && contains(env.PLATFORMS, 'instagram')
         run: |
           ME=$(curl -s "${GRAPH}/me?fields=user_id,username,account_type&access_token=${IG_ACCESS_TOKEN}")
           IGID=$(echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); String(j.user_id || j.id || '')")
           UNAME=$(echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.username || '-'")
-          ATYPE=$(echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.account_type || '-'")
           if [ -z "$IGID" ]; then
             echo "ERROR: token tidak valid atau akun tidak bisa diresolusi. Respons API:"
             echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); JSON.stringify(j.error||j,null,2)"
             exit 1
           fi
           echo "IGID=$IGID" >> "$GITHUB_ENV"
-          echo "Akun terhubung: @${UNAME} (tipe: ${ATYPE}, publish ID: ${IGID})"
-          if [ -n "$IG_USER_ID" ] && [ "$IGID" != "$IG_USER_ID" ]; then
-            echo "CATATAN: secret IG_USER_ID berbeda dengan ID hasil resolusi token - memakai hasil resolusi."
-          fi
+          echo "Akun terhubung: @${UNAME} (publish ID: ${IGID})"
 
       - name: Unduh rilis matang terbaru
         if: env.SKIP != 'true'
@@ -141,7 +148,7 @@ jobs:
           echo "Video tersedia di etalase R2 dengan key ${KEY}"
 
       - name: Buat container Reels
-        if: env.SKIP != 'true'
+        if: env.SKIP != 'true' && contains(env.PLATFORMS, 'instagram')
         run: |
           RES=$(curl -s -X POST "${GRAPH}/${IGID}/media" --data-urlencode "media_type=REELS" --data-urlencode "video_url=${VIDEO_URL}" --data-urlencode "caption@caption.txt" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           CID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
@@ -154,7 +161,7 @@ jobs:
           echo "Container dibuat: $CID"
 
       - name: Tunggu container siap
-        if: env.SKIP != 'true'
+        if: env.SKIP != 'true' && contains(env.PLATFORMS, 'instagram')
         run: |
           STATUS=UNKNOWN
           for i in $(seq 1 30); do
@@ -173,7 +180,7 @@ jobs:
           fi
 
       - name: Publish Reels
-        if: env.SKIP != 'true'
+        if: env.SKIP != 'true' && contains(env.PLATFORMS, 'instagram')
         run: |
           RES=$(curl -s -X POST "${GRAPH}/${IGID}/media_publish" --data-urlencode "creation_id=${CREATION_ID}" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           MEDIA_ID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
@@ -183,6 +190,65 @@ jobs:
             exit 1
           fi
           echo "SUKSES: Reels tayang. Media ID: $MEDIA_ID (episode $EPISODE, rilis $TAG)"
+
+      - name: Publish via Buffer (TikTok/YouTube)
+        if: env.SKIP != 'true' && (contains(env.PLATFORMS, 'tiktok') || contains(env.PLATFORMS, 'youtube'))
+        run: |
+          cat > buffer-publish.mjs <<'EOF'
+          import fs from "node:fs"
+
+          const API = "https:" + "//" + process.env.BUFFER_HOST
+          const KEY = process.env.BUFFER_API_KEY || ""
+          if (!KEY) { console.error("ERROR: secret BUFFER_API_KEY belum diset"); process.exit(1) }
+
+          async function gql(query, variables) {
+            const res = await fetch(API, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": "Bearer " + KEY },
+              body: JSON.stringify(variables ? { query, variables } : { query }),
+            })
+            const j = await res.json()
+            if (j.errors) {
+              console.error("ERROR GraphQL:", JSON.stringify(j.errors, null, 2))
+              process.exit(1)
+            }
+            return j.data
+          }
+
+          const pkg = JSON.parse(fs.readFileSync("episodes/" + process.env.EPISODE + "/episode.json", "utf8")).packaging || {}
+          const wanted = (process.env.PLATFORMS || "").split(",").map(s => s.trim()).filter(s => s === "tiktok" || s === "youtube")
+
+          const orgs = await gql("query { account { organizations { id name } } }")
+          const orgId = orgs.account.organizations[0].id
+          const chData = await gql('query { channels(input: { organizationId: "' + orgId + '" }) { id name service } }')
+          const channels = chData.channels || []
+          console.log("Channel Buffer tersedia:", channels.map(c => c.service + ":" + c.name).join(", ") || "(kosong)")
+
+          const dueAt = new Date(Date.now() + 10 * 60 * 1000).toISOString()
+          let failed = false
+          for (const svc of wanted) {
+            const ch = channels.find(c => (c.service || "").toLowerCase().includes(svc))
+            if (!ch) {
+              console.error("ERROR " + svc + ": channel belum tersambung di akun Buffer")
+              failed = true
+              continue
+            }
+            const text = svc === "youtube" ? (pkg.youtubeTitle || pkg.instagramCaption || "") : (pkg.tiktokCaption || pkg.instagramCaption || "")
+            const data = await gql(
+              "mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { ... on PostActionSuccess { post { id dueAt } } ... on MutationError { message } } }",
+              { input: { channelId: ch.id, text: text, schedulingType: "automatic", mode: "customScheduled", dueAt: dueAt, assets: [{ video: { url: process.env.VIDEO_URL } }] } }
+            )
+            const out = (data && data.createPost) || {}
+            if (out.post && out.post.id) {
+              console.log("SUKSES " + svc + ": post " + out.post.id + " terjadwal " + out.post.dueAt)
+            } else {
+              console.error("ERROR " + svc + ": " + (out.message || JSON.stringify(out)))
+              failed = true
+            }
+          }
+          if (failed) process.exit(1)
+          EOF
+          node buffer-publish.mjs
 
       - name: Tandai antrean selesai (anti tayang ganda)
         if: env.SKIP != 'true' && env.SOURCE == 'trigger'
