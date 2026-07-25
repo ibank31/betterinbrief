@@ -233,10 +233,15 @@ jobs:
               failed = true
               continue
             }
-            const text = svc === "youtube" ? (pkg.youtubeTitle || pkg.instagramCaption || "") : (pkg.tiktokCaption || pkg.instagramCaption || "")
+            const text = svc === "youtube" ? (pkg.youtubeDescription || pkg.instagramCaption || "") : (pkg.tiktokCaption || pkg.instagramCaption || "")
+            const input = { channelId: ch.id, text: text, schedulingType: "automatic", mode: "customScheduled", dueAt: dueAt, assets: [{ video: { url: process.env.VIDEO_URL } }] }
+            if (svc === "youtube") {
+              const ytTitle = String(pkg.youtubeTitle || text.split("\n")[0] || "Better In Brief").slice(0, 100)
+              input.metadata = { youtube: { title: ytTitle, categoryId: String(pkg.youtubeCategoryId || "27") } }
+            }
             const data = await gql(
               "mutation CreatePost($input: CreatePostInput!) { createPost(input: $input) { ... on PostActionSuccess { post { id dueAt } } ... on MutationError { message } } }",
-              { input: { channelId: ch.id, text: text, schedulingType: "automatic", mode: "customScheduled", dueAt: dueAt, assets: [{ video: { url: process.env.VIDEO_URL } }] } }
+              { input: input }
             )
             const out = (data && data.createPost) || {}
             if (out.post && out.post.id) {
