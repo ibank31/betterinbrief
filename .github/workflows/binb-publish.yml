@@ -80,7 +80,6 @@ jobs:
         if: env.SKIP != 'true'
         run: |
           MISSING=""
-          [ -z "$IG_USER_ID" ] && MISSING="$MISSING IG_USER_ID(secret)"
           [ -z "$IG_ACCESS_TOKEN" ] && MISSING="$MISSING IG_ACCESS_TOKEN(secret)"
           [ -z "$R2_PUBLIC_BASE" ] && MISSING="$MISSING R2_PUBLIC_BASE(variable)"
           if [ -n "$MISSING" ]; then
@@ -88,6 +87,24 @@ jobs:
             exit 1
           fi
           echo "Prasyarat lengkap."
+
+      - name: Resolusi akun Instagram dari token
+        if: env.SKIP != 'true'
+        run: |
+          ME=$(curl -s "${GRAPH}/me?fields=user_id,username,account_type&access_token=${IG_ACCESS_TOKEN}")
+          IGID=$(echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); String(j.user_id || j.id || '')")
+          UNAME=$(echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.username || '-'")
+          ATYPE=$(echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.account_type || '-'")
+          if [ -z "$IGID" ]; then
+            echo "ERROR: token tidak valid atau akun tidak bisa diresolusi. Respons API:"
+            echo "$ME" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); JSON.stringify(j.error||j,null,2)"
+            exit 1
+          fi
+          echo "IGID=$IGID" >> "$GITHUB_ENV"
+          echo "Akun terhubung: @${UNAME} (tipe: ${ATYPE}, publish ID: ${IGID})"
+          if [ -n "$IG_USER_ID" ] && [ "$IGID" != "$IG_USER_ID" ]; then
+            echo "CATATAN: secret IG_USER_ID berbeda dengan ID hasil resolusi token - memakai hasil resolusi."
+          fi
 
       - name: Unduh rilis matang terbaru
         if: env.SKIP != 'true'
@@ -126,7 +143,7 @@ jobs:
       - name: Buat container Reels
         if: env.SKIP != 'true'
         run: |
-          RES=$(curl -s -X POST "${GRAPH}/${IG_USER_ID}/media" --data-urlencode "media_type=REELS" --data-urlencode "video_url=${VIDEO_URL}" --data-urlencode "caption@caption.txt" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
+          RES=$(curl -s -X POST "${GRAPH}/${IGID}/media" --data-urlencode "media_type=REELS" --data-urlencode "video_url=${VIDEO_URL}" --data-urlencode "caption@caption.txt" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           CID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
           if [ -z "$CID" ]; then
             echo "ERROR: gagal membuat container Reels. Respons API:"
@@ -158,7 +175,7 @@ jobs:
       - name: Publish Reels
         if: env.SKIP != 'true'
         run: |
-          RES=$(curl -s -X POST "${GRAPH}/${IG_USER_ID}/media_publish" --data-urlencode "creation_id=${CREATION_ID}" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
+          RES=$(curl -s -X POST "${GRAPH}/${IGID}/media_publish" --data-urlencode "creation_id=${CREATION_ID}" --data-urlencode "access_token=${IG_ACCESS_TOKEN}")
           MEDIA_ID=$(echo "$RES" | node -p "const j=JSON.parse(require('fs').readFileSync(0,'utf8')); j.id || ''")
           if [ -z "$MEDIA_ID" ]; then
             echo "ERROR: publish gagal. Respons API:"
