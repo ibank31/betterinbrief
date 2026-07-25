@@ -1,11 +1,8 @@
 {
-  "episode": "ai-pay-gap",
-  "platforms": [
-    "instagram"
-  ],
+  "episode": "job-switch-premium",
+  "platforms": ["instagram"],
   "requestedBy": "RadjaAgent",
-  "at": "2026-07-25T03:48:30Z",
-  "notBefore": "2026-07-24T22:00:00Z",
-  "done": true,
-  "publishedAt": "2026-07-25T03:48:26.028Z"
+  "at": "2026-07-25T07:20:00Z",
+  "notBefore": "2026-07-25T22:00:00Z",
+  "done": false
 }
