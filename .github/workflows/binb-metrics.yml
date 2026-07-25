@@ -13,9 +13,12 @@ jobs:
     env:
       IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
       BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
       GRAPH_HOST: graph.instagram.com
       GRAPH_VERSION: v23.0
       BUFFER_HOST: api.buffer.com
+      YT_HOST: www.googleapis.com
+      YT_HANDLE: betterinbrief
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,15 +28,17 @@ jobs:
         with:
           node-version: 22
 
-      - name: Tarik metrik IG + Buffer
+      - name: Tarik metrik IG + Buffer + YouTube
         run: |
           cat > pull-metrics.mjs <<'EOF'
           import fs from "node:fs"
 
           const GRAPH = "https:" + "//" + process.env.GRAPH_HOST + "/" + process.env.GRAPH_VERSION
           const BUFFER = "https:" + "//" + process.env.BUFFER_HOST
+          const YT = "https:" + "//" + process.env.YT_HOST + "/youtube/v3"
           const IG_TOKEN = process.env.IG_ACCESS_TOKEN || ""
           const BUF_KEY = process.env.BUFFER_API_KEY || ""
+          const YT_KEY = process.env.YOUTUBE_API_KEY || ""
 
           async function jget(url) {
             const res = await fetch(url)
@@ -48,7 +53,7 @@ jobs:
             return res.json()
           }
 
-          const out = { takenAt: new Date().toISOString(), instagram: {}, buffer: {} }
+          const out = { takenAt: new Date().toISOString(), instagram: {}, buffer: {}, youtube: {} }
 
           if (IG_TOKEN) {
             try {
@@ -97,6 +102,29 @@ jobs:
             } catch (e) { out.buffer.error = String(e) }
           } else {
             out.buffer.error = "BUFFER_API_KEY tidak diset"
+          }
+
+          if (YT_KEY) {
+            try {
+              const chRes = await jget(YT + "/channels?part=snippet,statistics,contentDetails&forHandle=" + process.env.YT_HANDLE + "&key=" + YT_KEY)
+              if (chRes.error) throw new Error(chRes.error.message)
+              const c = (chRes.items || [])[0]
+              if (!c) throw new Error("channel dengan handle @" + process.env.YT_HANDLE + " tidak ditemukan - cek handle channel di aplikasi YouTube lalu perbarui YT_HANDLE di workflow")
+              out.youtube.channel = { id: c.id, title: c.snippet.title, subscribers: c.statistics.subscriberCount, totalViews: c.statistics.viewCount, videoCount: c.statistics.videoCount }
+              const uploads = c.contentDetails.relatedPlaylists.uploads
+              const items = await jget(YT + "/playlistItems?part=contentDetails&maxResults=50&playlistId=" + uploads + "&key=" + YT_KEY)
+              if (items.error) throw new Error(items.error.message)
+              const ids = (items.items || []).map(i => i.contentDetails.videoId).join(",")
+              if (ids) {
+                const vids = await jget(YT + "/videos?part=snippet,statistics&id=" + ids + "&key=" + YT_KEY)
+                if (vids.error) throw new Error(vids.error.message)
+                out.youtube.videos = (vids.items || []).map(v => ({ id: v.id, title: v.snippet.title, publishedAt: v.snippet.publishedAt, views: v.statistics.viewCount, likes: v.statistics.likeCount, comments: v.statistics.commentCount }))
+              } else {
+                out.youtube.videos = []
+              }
+            } catch (e) { out.youtube.error = String(e) }
+          } else {
+            out.youtube.error = "YOUTUBE_API_KEY tidak diset"
           }
 
           fs.mkdirSync("metrics/history", { recursive: true })
