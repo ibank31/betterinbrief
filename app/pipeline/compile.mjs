@@ -25,8 +25,11 @@ export function splitCaptions(text, maxChars) {
  *
  * Mode caption:
  * - WORD-TIMELINE: bila alignManifest punya kata ter-timestamp untuk scene
- *   (jumlah kata cocok dengan narasi tampilan), cue dan tiap kata memakai
- *   waktu ucapan NYATA dari whisper.cpp.
+ *   (jumlah kata cocok dengan narasi tampilan), tiap kata pop pada waktu
+ *   ucapan NYATA dari whisper.cpp. Awal cue diambil dari kata pertamanya,
+ *   TAPI digeser lebih awal bila jendela tampil terlalu sempit untuk dibaca
+ *   (batas maxCharsPerSecond tetap ditegakkan; menggeser awal tidak mengubah
+ *   waktu pop kata karena overlay memakai timestamp per kata).
  * - ESTIMASI (legacy): proporsional panjang huruf; identik dengan perilaku
  *   lama sehingga episode tanpa align-manifest tidak berubah sama sekali.
  */
@@ -74,25 +77,39 @@ export function deriveRenderProps(locked, ttsManifest, alignManifest = null) {
     const displayWordTotal = scene.narration.trim().split(/\s+/).filter(Boolean).length;
 
     if (alignedWords && alignedWords.length === displayWordTotal) {
-      // MODE WORD-TIMELINE: cue mulai saat kata pertamanya benar-benar diucapkan.
+      // MODE WORD-TIMELINE.
       alignedSceneTotal += 1;
+      const minFramesFor = (chunk) => Math.max(
+        Math.round(limits.captions.minDurationSec * fps),
+        Math.ceil((chunk.length / limits.captions.maxCharsPerSecond) * fps));
+      const sceneEnd = from + speechFrames;
       const sceneCues = [];
       let wi = 0;
-      let prevStart = from;
       for (const chunk of chunks) {
         const chunkWordTotal = chunk.trim().split(/\s+/).filter(Boolean).length;
         const cw = alignedWords.slice(wi, wi + chunkWordTotal);
         wi += chunkWordTotal;
-        const startFrame = Math.max(prevStart, from + Math.round(cw[0].startSec * fps));
-        sceneCues.push({chunk, cw, startFrame});
-        prevStart = startFrame + 1;
+        sceneCues.push({chunk, cw, startFrame: from + Math.round(cw[0].startSec * fps)});
+      }
+      // Backward pass: bila jendela tampil cue lebih sempit dari kebutuhan
+      // baca, geser awal cue lebih awal. Kata tetap pop di waktu nyata.
+      for (let ci = sceneCues.length - 1; ci >= 0; ci--) {
+        const end = ci === sceneCues.length - 1 ? sceneEnd : sceneCues[ci + 1].startFrame;
+        const minStart = end - minFramesFor(sceneCues[ci].chunk);
+        if (sceneCues[ci].startFrame > minStart) sceneCues[ci].startFrame = minStart;
+      }
+      // Forward pass: jaga monotonik dan tidak mulai sebelum awal scene.
+      let prevStart = from - 1;
+      for (const cue of sceneCues) {
+        cue.startFrame = Math.max(cue.startFrame, from, prevStart + 1);
+        prevStart = cue.startFrame;
       }
       sceneCues.forEach((cue, ci) => {
         const next = sceneCues[ci + 1];
-        const endFrame = next ? next.startFrame : Math.max(cue.startFrame + 1, from + speechFrames);
+        const endFrame = next ? next.startFrame : Math.max(cue.startFrame + 1, sceneEnd);
         const cps = cue.chunk.length / ((endFrame - cue.startFrame) / fps);
         if (cps > limits.captions.maxCharsPerSecond) {
-          errors.push(`${scene.id} caption ${ci + 1} terlalu cepat: ${cps.toFixed(1)} chars/s > ${limits.captions.maxCharsPerSecond}`);
+          errors.push(`${scene.id} caption ${ci + 1} terlalu cepat: ${cps.toFixed(1)} chars/s > ${limits.captions.maxCharsPerSecond} (narasi scene terlalu padat untuk durasinya)`);
         }
         let wPrev = cue.startFrame;
         const words = cue.cw.map((w) => {
