@@ -1,0 +1,120 @@
+name: BinB Metrics
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "35 1 * * *"
+
+jobs:
+  metrics:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: write
+    env:
+      IG_ACCESS_TOKEN: ${{ secrets.IG_ACCESS_TOKEN }}
+      BUFFER_API_KEY: ${{ secrets.BUFFER_API_KEY }}
+      GRAPH_HOST: graph.instagram.com
+      GRAPH_VERSION: v23.0
+      BUFFER_HOST: api.buffer.com
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Tarik metrik IG + Buffer
+        run: |
+          cat > pull-metrics.mjs <<'EOF'
+          import fs from "node:fs"
+
+          const GRAPH = "https:" + "//" + process.env.GRAPH_HOST + "/" + process.env.GRAPH_VERSION
+          const BUFFER = "https:" + "//" + process.env.BUFFER_HOST
+          const IG_TOKEN = process.env.IG_ACCESS_TOKEN || ""
+          const BUF_KEY = process.env.BUFFER_API_KEY || ""
+
+          async function jget(url) {
+            const res = await fetch(url)
+            return res.json()
+          }
+          async function gql(query) {
+            const res = await fetch(BUFFER, {
+              method: "POST",
+              headers: { "Content-Type": "application/json", "Authorization": "Bearer " + BUF_KEY },
+              body: JSON.stringify({ query }),
+            })
+            return res.json()
+          }
+
+          const out = { takenAt: new Date().toISOString(), instagram: {}, buffer: {} }
+
+          if (IG_TOKEN) {
+            try {
+              const me = await jget(GRAPH + "/me?fields=user_id,username,account_type,followers_count,media_count&access_token=" + IG_TOKEN)
+              out.instagram.account = me.error ? { error: me.error.message } : me
+              const igid = me.user_id || me.id
+              if (igid) {
+                const media = await jget(GRAPH + "/" + igid + "/media?fields=id,caption,media_product_type,timestamp,like_count,comments_count&limit=25&access_token=" + IG_TOKEN)
+                const items = []
+                for (const m of (media.data || [])) {
+                  const ins = await jget(GRAPH + "/" + m.id + "/insights?metric=views,reach,likes,comments,shares,saved,total_interactions&access_token=" + IG_TOKEN)
+                  const metrics = {}
+                  for (const d of (ins.data || [])) metrics[d.name] = d.values && d.values[0] ? d.values[0].value : null
+                  if (ins.error) metrics.insightsError = ins.error.message
+                  items.push({ id: m.id, type: m.media_product_type, publishedAt: m.timestamp, caption: String(m.caption || "").split("\n")[0].slice(0, 60), likes: m.like_count, comments: m.comments_count, metrics })
+                }
+                out.instagram.media = items
+              }
+            } catch (e) { out.instagram.error = String(e) }
+          } else {
+            out.instagram.error = "IG_ACCESS_TOKEN tidak diset"
+          }
+
+          if (BUF_KEY) {
+            try {
+              const orgs = await gql("query { account { organizations { id name } } }")
+              if (orgs.errors) throw new Error(JSON.stringify(orgs.errors))
+              const orgId = orgs.data.account.organizations[0].id
+              const ch = await gql('query { channels(input: { organizationId: "' + orgId + '" }) { id name service } }')
+              if (ch.errors) throw new Error(JSON.stringify(ch.errors))
+              const endW = new Date().toISOString()
+              const startW = new Date(Date.now() - 30 * 24 * 3600 * 1000).toISOString()
+              out.buffer.channels = []
+              for (const c of (ch.data.channels || [])) {
+                const agg = await gql('query { aggregatedPostMetrics(input: { organizationId: "' + orgId + '", startDateTime: "' + startW + '", endDateTime: "' + endW + '", channelIds: ["' + c.id + '"] }) { metrics { type name value unit } metricsUpdatedAt } }')
+                const entry = { service: c.service, name: c.name, windowDays: 30 }
+                if (agg.errors) {
+                  entry.error = JSON.stringify(agg.errors)
+                } else {
+                  entry.metricsUpdatedAt = agg.data.aggregatedPostMetrics.metricsUpdatedAt
+                  entry.metrics = {}
+                  for (const m of (agg.data.aggregatedPostMetrics.metrics || [])) entry.metrics[m.type] = m.unit === "percentage" ? String(m.value) + "%" : m.value
+                }
+                out.buffer.channels.push(entry)
+              }
+            } catch (e) { out.buffer.error = String(e) }
+          } else {
+            out.buffer.error = "BUFFER_API_KEY tidak diset"
+          }
+
+          fs.mkdirSync("metrics/history", { recursive: true })
+          const day = out.takenAt.slice(0, 10)
+          fs.writeFileSync("metrics/history/" + day + ".json", JSON.stringify(out, null, 2) + "\n")
+          fs.writeFileSync("metrics/latest.json", JSON.stringify(out, null, 2) + "\n")
+          console.log(JSON.stringify(out, null, 2))
+          EOF
+          node pull-metrics.mjs
+
+      - name: Simpan snapshot ke repo
+        run: |
+          git config user.name "binb-bot"
+          git config user.email "binb-bot@users.noreply.github.com"
+          git add metrics
+          if git diff --cached --quiet; then
+            echo "Tidak ada perubahan metrik untuk disimpan."
+          else
+            git commit -m "metrics: snapshot $(date -u +%F) [skip ci]"
+            git push
+          fi
