@@ -26,7 +26,8 @@ function diffPaths(a, b, prefix = "", out = []) {
 
 /**
  * Gerbang anti-mismatch "JOB LOSS vs REPLACEMENT":
- * 1. Turunkan ulang render props dari episode.locked.json + tts-manifest (deterministik).
+ * 1. Turunkan ulang render props dari episode.locked.json + tts-manifest
+ *    (+ align-manifest bila ada; deterministik).
  * 2. Bandingkan canonical JSON dengan render-props.json yang tersimpan.
  * 3. Pastikan sha256 file props SAAT RENDER (render-manifest) == sha256 file props sekarang.
  * Jika ada satu teks pun berbeda, build GAGAL.
@@ -42,7 +43,9 @@ export function qcContent(id) {
   const propsPath = path.join(workDir, "render-props.json");
   const storedProps = readJson(propsPath);
   const tts = readJson(path.join(workDir, "tts-manifest.json"));
-  const {renderProps: expected} = deriveRenderProps(locked, tts);
+  const alignPath = path.join(workDir, "align-manifest.json");
+  const align = fs.existsSync(alignPath) ? readJson(alignPath) : null;
+  const {renderProps: expected} = deriveRenderProps(locked, tts, align);
   const diffs = diffPaths(expected, storedProps);
   check(checks, "content.semanticConsistency", diffs.length === 0,
     diffs.length ? `RENDER INPUT BERBEDA DARI LOCKED JSON:\n  ${diffs.slice(0, 12).join("\n  ")}` : "render-props identik dengan derivasi ulang dari episode.locked.json");
@@ -71,12 +74,17 @@ export function qcContent(id) {
   }
   const stray = content.visualTexts.filter((t) => !lockedTexts.has(t.text));
   check(checks, "content.visualTextManifest", stray.length === 0,
-    stray.length ? `Teks di render TIDAK ada di locked JSON: ${stray.slice(0, 5).map((s) => `${s.scene}.${s.field}="${s.text}"`).join("; ")}` : `${content.visualTexts.length} teks visual semuanya berasal dari locked JSON`);
+    stray.length ? `Teks di render TIDAK ada di locked JSON: ${stray.slice(0, 5).map((s) => `${s.scene}.${s.field}=\"${s.text}\"`).join("; ")}` : `${content.visualTexts.length} teks visual semuanya berasal dari locked JSON`);
 
   const narrations = new Set(locked.scenes.map((s) => s.narration));
   const badCaps = content.captions.filter((c) => ![...narrations].some((n) => n.includes(c.text)));
   check(checks, "content.captionsManifest", badCaps.length === 0,
-    badCaps.length ? `Caption bukan potongan narasi locked: "${badCaps[0].text}"` : `${content.captions.length} caption cocok dengan narasi locked`);
+    badCaps.length ? `Caption bukan potongan narasi locked: \"${badCaps[0].text}\"` : `${content.captions.length} caption cocok dengan narasi locked`);
+
+  // Word-Timeline Engine: laporkan mode timing caption per scene (informasional).
+  const alignedIds = align ? align.scenes.filter((s) => Array.isArray(s.words) && s.words.length > 0).map((s) => s.sceneId) : [];
+  check(checks, "content.captionTimingSource", true,
+    align ? `word-timeline aktif utk ${alignedIds.length}/${locked.scenes.length} scene (${alignedIds.join(",") || "-"})` : "align-manifest tidak ada - semua caption pakai estimasi", "warning");
 
   // sources / claims / rights / title / packaging
   check(checks, "content.sourcesPresent", locked.sources.length > 0, `${locked.sources.length} sources`);
@@ -85,7 +93,7 @@ export function qcContent(id) {
   check(checks, "content.sourceEvidence", evidenceFiles.length > 0, evidenceFiles.length ? `${evidenceFiles.length} file bukti` : "folder sources kosong - simpan PDF/screenshot bukti", "warning");
   check(checks, "content.claimsVerified", locked.claims.every((c) => c.verified === true), "semua claims verified");
   check(checks, "content.rights", ["musicLicensed", "visualsOriginal", "narrationOriginal", "factsVerified"].every((k) => locked.rights[k] === true), JSON.stringify(locked.rights));
-  check(checks, "content.titleConsistency", storedProps.title === locked.title, `"${storedProps.title}"`);
+  check(checks, "content.titleConsistency", storedProps.title === locked.title, `\"${storedProps.title}\"`);
   check(checks, "content.packaging", Boolean(locked.packaging.youtubeTitle && locked.packaging.instagramCaption && locked.packaging.tiktokCaption), "publishing copy lengkap");
   return {checks};
 }
