@@ -1,0 +1,189 @@
+{
+  "takenAt": "2026-07-25T09:27:47.635Z",
+  "instagram": {
+    "account": {
+      "user_id": "17841446039959729",
+      "username": "betterinbrief",
+      "account_type": "MEDIA_CREATOR",
+      "followers_count": 2,
+      "media_count": 3,
+      "id": "37114530491528792"
+    },
+    "media": [
+      {
+        "id": "18091627526078745",
+        "type": "REELS",
+        "publishedAt": "2026-07-25T03:48:21+0000",
+        "caption": "Same job title. 62% more pay. 🤯",
+        "likes": 0,
+        "comments": 0,
+        "metrics": {
+          "views": 19,
+          "reach": 17,
+          "likes": 0,
+          "comments": 0,
+          "shares": 0,
+          "saved": 0,
+          "total_interactions": 0
+        }
+      },
+      {
+        "id": "18125077360819450",
+        "type": "REELS",
+        "publishedAt": "2026-07-22T22:36:47+0000",
+        "caption": "AI could affect 1 in 4 workers. But \"affected\" does not mean",
+        "likes": 0,
+        "comments": 0,
+        "metrics": {
+          "views": 7,
+          "reach": 4,
+          "likes": 0,
+          "comments": 0,
+          "shares": 0,
+          "saved": 0,
+          "total_interactions": 0
+        }
+      },
+      {
+        "id": "17943874104050151",
+        "type": "REELS",
+        "publishedAt": "2026-07-22T13:58:47+0000",
+        "caption": "Everyone's asking if AI will take their job. Wrong question.",
+        "likes": 0,
+        "comments": 0,
+        "metrics": {
+          "views": 106,
+          "reach": 102,
+          "likes": 0,
+          "comments": 0,
+          "shares": 0,
+          "saved": 0,
+          "total_interactions": 0
+        }
+      }
+    ]
+  },
+  "buffer": {
+    "channels": [
+      {
+        "service": "youtube",
+        "name": "Better In Brief",
+        "windowDays": 30,
+        "metricsUpdatedAt": "2026-07-25T08:10:24.941Z",
+        "metrics": {
+          "postCount": 3,
+          "reactions": 3,
+          "comments": 0,
+          "engagementRate": "0.74%",
+          "views": 408
+        }
+      },
+      {
+        "service": "tiktok",
+        "name": "betterinbrief",
+        "windowDays": 30,
+        "metricsUpdatedAt": "2026-07-25T07:30:44.048Z",
+        "metrics": {
+          "postCount": 2,
+          "reactions": 8,
+          "comments": 0,
+          "engagementRate": "1.9%",
+          "views": 420,
+          "shares": 0,
+          "reach": 381
+        }
+      }
+    ]
+  },
+  "youtube": {
+    "channel": {
+      "id": "UCtmLYt7jYkzbiORenk3pFgw",
+      "title": "Better in Brief",
+      "subscribers": "1",
+      "totalViews": "50",
+      "videoCount": "10"
+    },
+    "videos": [
+      {
+        "id": "J_eRINcGdsE",
+        "title": "Why Gen X Rarely Asks for Help (The Real Reason)",
+        "publishedAt": "2026-03-22T17:31:35Z",
+        "views": "5",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "HgxzUvp6e_0",
+        "title": "Why Gen Z Doesn’t Understand the Internet Anymore",
+        "publishedAt": "2026-03-08T11:21:23Z",
+        "views": "5",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "FZZW0KS7_wM",
+        "title": "Gen X Is Done Filtering and That's Not Cold",
+        "publishedAt": "2026-03-07T12:48:28Z",
+        "views": "30",
+        "likes": "4",
+        "comments": "2"
+      },
+      {
+        "id": "1aE4OvQbxpY",
+        "title": "What Happens When You Change Your Posture for 5 Seconds?",
+        "publishedAt": "2026-03-06T23:55:30Z",
+        "views": "0",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "Df_Gb7dELKg",
+        "title": "The Smile Test",
+        "publishedAt": "2026-03-06T23:11:33Z",
+        "views": "0",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "K7N1CJFYFKc",
+        "title": "Why “Hi” Is Annoying And What to Say Instead",
+        "publishedAt": "2026-02-28T14:23:29Z",
+        "views": "3",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "eNk7YvaoM8Q",
+        "title": "Crying in Arguments? You’re Not \"manipulative\"",
+        "publishedAt": "2026-02-09T08:05:49Z",
+        "views": "1",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "sOyUcvm6xtI",
+        "title": "You Don’t Find a New World — You Find What You Look For Short Story",
+        "publishedAt": "2026-02-08T23:29:49Z",
+        "views": "0",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "_FPvH9_Uz20",
+        "title": "How to Handle Stress Without Breaking Yourself (Watermelon Lesson)",
+        "publishedAt": "2026-02-08T23:29:40Z",
+        "views": "0",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "TmLyT4LK1H8",
+        "title": "10 High IQ Traits (And Why Everyone Thinks They Have Them)",
+        "publishedAt": "2026-02-08T22:27:12Z",
+        "views": "6",
+        "likes": "0",
+        "comments": "0"
+      }
+    ]
+  }
+}
