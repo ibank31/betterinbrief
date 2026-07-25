@@ -118,7 +118,7 @@ jobs:
         if: env.SKIP != 'true'
         run: |
           KEY="${TAG}.mp4"
-          npx --yes wrangler@3 r2 object put "${R2_BUCKET}/${KEY}" --file "$VIDEO_FILE" --remote
+          npx --yes wrangler@3 r2 object put "${R2_BUCKET}/${KEY}" --file "$VIDEO_FILE" --content-type video/mp4
           BASE="${R2_PUBLIC_BASE%/}"
           echo "VIDEO_URL=${BASE}/${KEY}" >> "$GITHUB_ENV"
           echo "Video tersedia di etalase R2 dengan key ${KEY}"
