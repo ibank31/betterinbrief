@@ -1,4 +1,4 @@
-// align.mjs — Word-Timeline Engine v2.1 (upgrade "human pacing" fase 1).
+// align.mjs — Word-Timeline Engine v2.1.1 (upgrade "human pacing" fase 1).
 //
 // Setelah TTS, setiap WAV scene ditranskripsi ulang dengan whisper.cpp
 // (token-level timestamps) lalu dipetakan kembali ke kata-kata narasi
@@ -23,7 +23,12 @@
 //    panjang daripada "a". Menghilangkan smear di blok angka/mata uang.
 // 5. Jendela snap adaptif: kata pembuka frasa (setelah celah suara)
 //    dikoreksi dengan jendela lebih lebar (0.25s), kata di tengah frasa
-//    dengan jendela sempit (0.15s) agar tidak mencomot onset tetangga.
+//    dengan jendela standar (0.18s) agar tidak mencomot onset tetangga.
+//
+// v2.1.1 — kalibrasi berdasarkan audit sinkron r31: jendela dasar 0.15s
+//    terbukti membuang jangkar snap yang benar (snap turun 82->74) tanpa
+//    kenaikan presisi terukur; dikembalikan ke 0.18s. Bobot suku kata dan
+//    jendela lebar untuk pembuka frasa dipertahankan.
 //
 // Desain aman-spike:
 // - config/alignment.json enabled=false mematikan stage ini sepenuhnya.
@@ -219,9 +224,9 @@ export function detectOnsets(wavPath) {
 // Koreksi awal kata ke onset vokal terdekat. Jendela adaptif (v2.1):
 // kata pembuka frasa (setelah celah >= gapThresholdSec dari kata
 // sebelumnya) memakai jendela lebar; kata di tengah frasa memakai jendela
-// sempit. Tiap onset dipakai maksimal satu kali; urutan tetap monotonik.
+// standar. Tiap onset dipakai maksimal satu kali; urutan tetap monotonik.
 export function snapToOnsets(words, onsets, opts = {}) {
-  const baseWindowSec = opts.baseWindowSec ?? 0.15;
+  const baseWindowSec = opts.baseWindowSec ?? 0.18;
   const gapWindowSec = opts.gapWindowSec ?? 0.25;
   const gapThresholdSec = opts.gapThresholdSec ?? 0.12;
   if (!onsets.length) return {words: words.map((w) => ({...w})), snapped: 0};
@@ -356,7 +361,7 @@ export async function runAlign(id, ttsManifest) {
   const manifest = {
     episodeId: id,
     engine: "whisper.cpp",
-    mappingEngine: "dp-v2.1+onset-snap-adaptive",
+    mappingEngine: "dp-v2.1.1+onset-snap-adaptive",
     model: cfg.model,
     whisperVersion: cfg.whisperVersion,
     generatedAt: new Date().toISOString(),
