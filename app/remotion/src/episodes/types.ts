@@ -80,7 +80,7 @@ export type VisualWorldSpec = {
   /** Optional scene-level metaphor. Components provide a safe type default. */
   device?: NarrativeDeviceKind;
   /** Optional media backdrop staged by tools/assets-fetch.mjs. */
-  media?: {src: string; kind: "image" | "video"; opacity?: number; treatment?: "backdrop" | "hero"};
+  media?: {src: string; kind: "image" | "video"; opacity?: number; treatment?: "backdrop" | "hero" | "generated"};
 };
 
 export type SceneMotion =
