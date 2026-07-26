@@ -1,0 +1,7 @@
+{
+  "_comment": "Pacing Engine v1 (sentence-gap): jeda napas NYATA antar kalimat, disisipkan di stage TTS. enabled=false mengembalikan perilaku lama 100% (termasuk cache key TTS). breathlessWarnSec: segmen bicara kontinu lebih panjang dari ini memicu warning 'scene tanpa napas' di log (non-fatal).",
+  "enabled": true,
+  "sentenceGapSec": 0.35,
+  "minSentenceChars": 12,
+  "breathlessWarnSec": 9
+}
