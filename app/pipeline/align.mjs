@@ -1,4 +1,4 @@
-// align.mjs — Word-Timeline Engine v2 (upgrade "human pacing" fase 1).
+// align.mjs — Word-Timeline Engine v2.1 (upgrade "human pacing" fase 1).
 //
 // Setelah TTS, setiap WAV scene ditranskripsi ulang dengan whisper.cpp
 // (token-level timestamps) lalu dipetakan kembali ke kata-kata narasi
@@ -16,6 +16,14 @@
 //    timestamp whisper +-100-300ms terkunci kembali ke suara nyata).
 // 3. Model default naik ke small.en (config/alignment.json) — timestamp
 //    base.en terbukti terlalu jittery untuk karaoke.
+//
+// v2.1 — perbaikan berdasarkan audit sinkron r30 (scene padat angka):
+// 4. Interpolasi kata tanpa pasangan kini BERBOBOT SUKU KATA, bukan rata:
+//    "$1.50" (dibaca "a dollar fifty") mendapat porsi durasi jauh lebih
+//    panjang daripada "a". Menghilangkan smear di blok angka/mata uang.
+// 5. Jendela snap adaptif: kata pembuka frasa (setelah celah suara)
+//    dikoreksi dengan jendela lebih lebar (0.25s), kata di tengah frasa
+//    dengan jendela sempit (0.15s) agar tidak mencomot onset tetangga.
 //
 // Desain aman-spike:
 // - config/alignment.json enabled=false mematikan stage ini sepenuhnya.
@@ -36,6 +44,19 @@ export const whisperDir = () => path.join(path.dirname(P.ttsCache()), "_whisper"
 
 function normToken(s) {
   return String(s).toLowerCase().replace(/[^a-z0-9']/g, "");
+}
+
+// Perkiraan jumlah suku kata sebuah kata TAMPILAN, dihitung dari bentuk
+// lisannya (normalizeSpeechText), sebagai bobot durasi saat interpolasi.
+export function syllableWeight(displayWord) {
+  const spoken = normalizeSpeechText(String(displayWord)).text || String(displayWord);
+  let total = 0;
+  for (const part of spoken.toLowerCase().split(/\s+/)) {
+    const letters = part.replace(/[^a-z]/g, "");
+    const groups = letters.match(/[aeiouy]+/g);
+    total += groups ? groups.length : letters ? 1 : 0;
+  }
+  return Math.max(1, total);
 }
 
 function lev(a, b) {
@@ -77,7 +98,7 @@ function expectedTokens(displayWords) {
 // Petakan kata lisan (whisper) -> kata tampilan (narasi) memakai DP
 // edit-distance. Selalu menghasilkan tepat displayWords.length entri dengan
 // waktu mulai monotonik naik; kata tanpa pasangan diinterpolasi di antara
-// tetangga yang punya timestamp.
+// tetangga yang punya timestamp, berbobot suku kata (v2.1).
 export function mapSpokenToDisplay(displayWords, spokenWords) {
   const exp = expectedTokens(displayWords);
   const spk = spokenWords.map((s) => ({...s, norm: normToken(s.text)}));
@@ -113,7 +134,8 @@ export function mapSpokenToDisplay(displayWords, spokenWords) {
     } else if (move === 1) i--;
     else j--;
   }
-  // Interpolasi kata tanpa pasangan di antara jangkar bertimestamp.
+  // Interpolasi kata tanpa pasangan di antara jangkar bertimestamp,
+  // porsi durasi proporsional terhadap bobot suku kata tiap kata (v2.1).
   let lastKnownEnd = 0;
   let k = 0;
   while (k < acc.length) {
@@ -123,10 +145,21 @@ export function mapSpokenToDisplay(displayWords, spokenWords) {
     const startBound = lastKnownEnd;
     const endBound = e < acc.length ? acc[e].startSec : startBound + 0.25 * (e - k);
     const span = Math.max(endBound - startBound, 0.02 * (e - k));
+    const weights = [];
+    let weightSum = 0;
     for (let q = k; q < e; q++) {
+      const w = syllableWeight(displayWords[q]);
+      weights.push(w);
+      weightSum += w;
+    }
+    let used = 0;
+    for (let q = k; q < e; q++) {
+      const w0 = used / weightSum;
+      used += weights[q - k];
+      const w1 = used / weightSum;
       acc[q] = {
-        startSec: startBound + (span * (q - k)) / (e - k),
-        endSec: startBound + (span * (q - k + 1)) / (e - k),
+        startSec: startBound + span * w0,
+        endSec: startBound + span * w1,
       };
     }
     lastKnownEnd = acc[e - 1].endSec;
@@ -183,14 +216,22 @@ export function detectOnsets(wavPath) {
   return onsets;
 }
 
-// Koreksi awal kata ke onset vokal terdekat (jendela +-windowSec). Tiap
-// onset dipakai maksimal satu kali; urutan waktu tetap monotonik.
-export function snapToOnsets(words, onsets, windowSec = 0.18) {
+// Koreksi awal kata ke onset vokal terdekat. Jendela adaptif (v2.1):
+// kata pembuka frasa (setelah celah >= gapThresholdSec dari kata
+// sebelumnya) memakai jendela lebar; kata di tengah frasa memakai jendela
+// sempit. Tiap onset dipakai maksimal satu kali; urutan tetap monotonik.
+export function snapToOnsets(words, onsets, opts = {}) {
+  const baseWindowSec = opts.baseWindowSec ?? 0.15;
+  const gapWindowSec = opts.gapWindowSec ?? 0.25;
+  const gapThresholdSec = opts.gapThresholdSec ?? 0.12;
   if (!onsets.length) return {words: words.map((w) => ({...w})), snapped: 0};
   const out = words.map((w) => ({...w}));
   let snapped = 0;
   let oi = 0;
   for (let q = 0; q < out.length; q++) {
+    const prevEnd = q > 0 ? out[q - 1].endSec : -1;
+    const phraseStart = q === 0 || out[q].startSec - prevEnd >= gapThresholdSec;
+    const windowSec = phraseStart ? gapWindowSec : baseWindowSec;
     let best = -1, bestD = windowSec + 1;
     for (let k = oi; k < onsets.length; k++) {
       const d = Math.abs(onsets[k] - out[q].startSec);
@@ -315,7 +356,7 @@ export async function runAlign(id, ttsManifest) {
   const manifest = {
     episodeId: id,
     engine: "whisper.cpp",
-    mappingEngine: "dp-v2+onset-snap",
+    mappingEngine: "dp-v2.1+onset-snap-adaptive",
     model: cfg.model,
     whisperVersion: cfg.whisperVersion,
     generatedAt: new Date().toISOString(),
