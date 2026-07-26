@@ -149,30 +149,41 @@ const MediaLayer: React.FC<{media: NonNullable<VisualWorldSpec["media"]>; surfac
   const frame = useCurrentFrame();
   const src = staticFile(media.src);
   const hero = media.treatment === "hero";
-  const opacity = media.opacity ?? (hero ? 1 : surface === "dark" ? 0.34 : 0.26);
-  const zoom = media.kind === "image" ? 1 + Math.min(frame * 0.00045, 0.09) : 1;
+  // v2 "generated": media AI full-bleed BERWARNA dengan grade brand dan kamera
+  // sintetis 2.5D (push-in + drift vertikal + grain + vignette). Deterministik
+  // penuh (hanya fungsi dari frame). Treatment lama backdrop/hero tidak berubah.
+  const generated = media.treatment === "generated";
+  const opacity = media.opacity ?? (hero || generated ? 1 : surface === "dark" ? 0.34 : 0.26);
+  const zoom = media.kind === "image"
+    ? (generated ? 1.07 + Math.min(frame * 0.00038, 0.11) : 1 + Math.min(frame * 0.00045, 0.09))
+    : 1;
+  const driftY = generated ? Math.min(frame * 0.05, 24) : 0;
   const mediaStyle: React.CSSProperties = {
     width: "100%",
     height: "100%",
     objectFit: "cover",
-    transform: "scale(" + zoom.toFixed(4) + ")",
-    filter: hero
-      ? "grayscale(1) contrast(" + (surface === "dark" ? "1.14" : "1.08") + ") brightness(" + (surface === "dark" ? "0.66" : "0.96") + ")"
-      : surface === "dark" ? "grayscale(1) contrast(1.08) brightness(0.85)" : "grayscale(1) contrast(1.05) brightness(1.08)",
+    transform: "scale(" + zoom.toFixed(4) + ") translateY(" + (-driftY).toFixed(2) + "px)",
+    filter: generated
+      ? "contrast(1.07) saturate(1.06) brightness(" + (surface === "dark" ? "0.82" : "0.98") + ")"
+      : hero
+        ? "grayscale(1) contrast(" + (surface === "dark" ? "1.14" : "1.08") + ") brightness(" + (surface === "dark" ? "0.66" : "0.96") + ")"
+        : surface === "dark" ? "grayscale(1) contrast(1.08) brightness(0.85)" : "grayscale(1) contrast(1.05) brightness(1.08)",
   };
   const frameStyle: React.CSSProperties = {
     opacity,
-    mixBlendMode: hero ? "normal" : surface === "dark" ? "screen" : "multiply",
+    mixBlendMode: hero || generated ? "normal" : surface === "dark" ? "screen" : "multiply",
     pointerEvents: "none",
   };
   const scrim = surface === "dark"
     ? "linear-gradient(180deg, rgba(0,0,0,0.42) 0%, rgba(0,0,0,0.32) 36%, rgba(0,0,0,0.62) 74%, rgba(0,0,0,0.82) 100%)"
     : "linear-gradient(180deg, rgba(250,247,240,0.32) 0%, rgba(250,247,240,0.26) 36%, rgba(250,247,240,0.70) 74%, rgba(250,247,240,0.88) 100%)";
   const vignette = "radial-gradient(ellipse at center, rgba(0,0,0,0) 52%, rgba(0,0,0,0.38) 100%)";
+  const grain = "repeating-radial-gradient(circle at 31% 27%, rgba(0,0,0,0.05) 0px, transparent 1px, transparent 3px)";
   return <AbsoluteFill style={frameStyle}>
     {media.kind === "video" ? <OffthreadVideo src={src} muted style={mediaStyle} /> : <Img src={src} style={mediaStyle} />}
-    {hero ? <AbsoluteFill style={ {backgroundImage: scrim} } /> : null}
-    {hero && surface === "dark" ? <AbsoluteFill style={ {backgroundImage: vignette} } /> : null}
+    {hero || generated ? <AbsoluteFill style={ {backgroundImage: scrim} } /> : null}
+    {generated ? <AbsoluteFill style={ {backgroundImage: grain, opacity: 0.5} } /> : null}
+    {(hero && surface === "dark") || generated ? <AbsoluteFill style={ {backgroundImage: vignette} } /> : null}
   </AbsoluteFill>;
 };
 
