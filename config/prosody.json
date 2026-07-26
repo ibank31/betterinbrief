@@ -1,9 +1,9 @@
 {
   "enabled": true,
-  "opener": {"speed": 1.03, "pitchFactor": 1.015},
-  "openerHook": {"speed": 1.05, "pitchFactor": 1.02},
-  "data": {"speed": 0.96, "pitchFactor": 0.99},
-  "punchline": {"speed": 0.94, "pitchFactor": 0.99},
+  "opener": {"speed": 1.03, "pitchFactor": 1.0},
+  "openerHook": {"speed": 1.05, "pitchFactor": 1.0},
+  "data": {"speed": 0.96, "pitchFactor": 1.0},
+  "punchline": {"speed": 0.94, "pitchFactor": 1.0},
   "neutralJitterPct": 3,
   "minPitchFactor": 0.96,
   "maxPitchFactor": 1.04
