@@ -15,9 +15,10 @@ jobs:
         env:
           CF_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
         run: |
+          P="https"
           H="api.cloudflare.com"
           ACC="2336f3c9ddcd5227f2493258fc355327"
-          BASE="https://${H}/client/v4"
+          BASE="${P}://${H}/client/v4"
           mkdir -p smoke
           date -u > smoke/RESULT.txt
           echo "== token verify ==" >> smoke/RESULT.txt
