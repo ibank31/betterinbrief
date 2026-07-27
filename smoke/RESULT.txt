@@ -1,0 +1,6 @@
+Mon Jul 27 10:06:21 UTC 2026
+== token verify ==
+{"success":false,"errors":[{"code":1000,"message":"Invalid API Token"}],"messages":[],"result":null}
+== sdxl generate ==
+image_bytes=73120
+smoke/cf_test.png: JPEG image data, JFIF standard 1.01, aspect ratio, density 1x1, segment length 16, baseline, precision 8, 832x1472, components 3
