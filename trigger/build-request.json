@@ -1,6 +1,6 @@
 {
-  "episode": "costco-hot-dog",
-  "requestedBy": "RadjaAgent",
-  "reason": "Rebuild setelah fix: musicLane money_people_decisions (hindari fixture silent -> TP jebol) + narasi dipangkas ke ~56s (drift durasi)",
-  "at": "2026-07-24T18:14:30Z"
+  "episode": "wework-collapse",
+  "requestedBy": "Termux-Agent",
+  "reason": "Drafting WeWork collapse for manual QC review.",
+  "at": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 }

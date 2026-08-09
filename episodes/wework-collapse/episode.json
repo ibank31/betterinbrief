@@ -1,0 +1,204 @@
+{
+  "schemaVersion": "1.0",
+  "episodeId": "wework-collapse",
+  "title": "The $47 Billion Illusion - WeWork's Collapse",
+  "status": "draft",
+  "accountPhase": "warmup",
+  "contentOrigin": "original",
+  "pillar": "cautionary_tale",
+  "formatFamily": "strategy_breakdown",
+  "voice": "af_heart,af_kore",
+  "musicLane": "money_people_decisions",
+  "campaign": null,
+  "rights": {
+    "musicLicensed": true,
+    "visualsOriginal": true,
+    "narrationOriginal": true,
+    "factsVerified": true
+  },
+  "sources": [
+    {
+      "sourceId": "SRC01",
+      "url": "https://www.wsj.com/business/entrepreneurship/wework-bankruptcy-adam-neumann",
+      "publisher": "Wall Street Journal",
+      "title": "WeWork Files for Bankruptcy",
+      "publishedDate": "2023-11-06",
+      "accessedDate": "2026-08-09"
+    },
+    {
+      "sourceId": "SRC02",
+      "url": "https://www.cnbc.com/2019/10/22/adam-neumann-reportedly-gets-1point7-billion-to-leave-wework.html",
+      "publisher": "CNBC",
+      "title": "Adam Neumann gets $1.7 billion to leave WeWork",
+      "publishedDate": "2019-10-22",
+      "accessedDate": "2026-08-09"
+    }
+  ],
+  "claims": [
+    {
+      "claimId": "C01",
+      "claim": "WeWork reached a peak private valuation of $47 billion in 2019.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C02",
+      "claim": "The company filed for Chapter 11 bankruptcy in November 2023.",
+      "sourceId": "SRC01",
+      "verified": true
+    },
+    {
+      "claimId": "C03",
+      "claim": "Co-founder Adam Neumann walked away with a payout of roughly $1.7 billion when forced out.",
+      "sourceId": "SRC02",
+      "verified": true
+    }
+  ],
+  "scenes": [
+    {
+      "id": "S01",
+      "role": "hook",
+      "type": "hook",
+      "variant": "contrarian",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "How do you burn forty-seven billion dollars in four years? You convince the world a real estate company is a tech startup.",
+      "claims": ["C01"],
+      "visual": {
+        "eyebrow": "CAUTIONARY TALE · WEWORK",
+        "statistic": "47",
+        "statisticSuffix": "BILLION",
+        "headline": "The fastest wealth incineration in history."
+      },
+      "visualAssets": [
+        {
+          "assetId": "A01",
+          "role": "context",
+          "kind": "stock_media",
+          "rightsStatus": "permission_verified",
+          "file": "assets/S01-backdrop.mp4",
+          "treatment": "hero",
+          "editorialPurpose": "Gedung perkantoran modern kaca - merepresentasikan ilusi kerajaan real estate",
+          "licenseUrl": "https://www.pexels.com/license/",
+          "fetch": {
+            "provider": "pexels",
+            "type": "video",
+            "query": "modern glass office building skyscraper"
+          }
+        }
+      ]
+    },
+    {
+      "id": "S02",
+      "role": "context",
+      "type": "quote",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Founder Adam Neumann didn't sell desks. He sold a movement. His stated mission wasn't to rent offices, but to elevate the world's consciousness.",
+      "visual": {
+        "eyebrow": "THE ILLUSION",
+        "quote": "Our mission is to elevate the world's consciousness.",
+        "attribution": "Adam Neumann, WeWork S-1 Filing",
+        "source": "SOURCE · WEWORK IPO PROSPECTUS, 2019"
+      }
+    },
+    {
+      "id": "S03",
+      "role": "evidence",
+      "type": "before_after",
+      "variant": "standard",
+      "surface": "dark",
+      "motion": "sharp_correction",
+      "narration": "The reality was simple arbitrage. Sign expensive long-term leases, and rent them out short-term. In 2019: valued at 47 billion. By 2023: Chapter 11 bankruptcy.",
+      "claims": ["C01", "C02"],
+      "visual": {
+        "eyebrow": "THE REALITY CHECK",
+        "beforeLabel": "2019 Peak",
+        "beforeText": "Valuation: $47 Billion",
+        "afterLabel": "2023 Crash",
+        "afterText": "Status: Bankrupt",
+        "subtitle": "The fatal flaw of long-term liabilities and short-term revenue."
+      }
+    },
+    {
+      "id": "S04",
+      "role": "evidence",
+      "type": "data_proof",
+      "variant": "single_value",
+      "surface": "dark",
+      "motion": "measured_reveal",
+      "narration": "But the founder didn't sink with the ship. When Neumann was forced out, he walked away with a golden parachute worth one point seven billion.",
+      "claims": ["C03"],
+      "visual": {
+        "eyebrow": "THE FOUNDER'S EXIT",
+        "value": 1.7,
+        "decimals": 1,
+        "suffix": "B",
+        "label": "Payout to Adam Neumann",
+        "source": "SOURCE · CNBC",
+        "subtitle": "The company collapsed. The founder became a billionaire."
+      }
+    },
+    {
+      "id": "S05",
+      "role": "mechanism",
+      "type": "process",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "stacked_build",
+      "narration": "The WeWork playbook: Use venture capital to subsidize losses. Grow relentlessly. Ignore unit economics. Disguise real estate as a tech platform.",
+      "visual": {
+        "eyebrow": "THE FLAWED PLAYBOOK",
+        "headline": "Growth at the cost of survival.",
+        "steps": [
+          { "label": "Subsidize rent with VC money" },
+          { "label": "Call real estate a 'tech platform'" },
+          { "label": "Ignore terrible unit economics" }
+        ]
+      }
+    },
+    {
+      "id": "S06",
+      "role": "outcome",
+      "type": "outcome",
+      "variant": "statement",
+      "surface": "orange",
+      "motion": "restrained_lift",
+      "narration": "Charisma can raise billions, but it can't fix a broken business model. Mathematics always wins in the end.",
+      "visual": {
+        "eyebrow": "THE LESSON",
+        "setup": "Charisma raises money.",
+        "outcome": "MATH",
+        "comparison": "> HYPE",
+        "question": "ARE YOUR ECONOMICS SOUND?",
+        "subtitle": "A broken model doesn't scale. It just crashes harder."
+      }
+    },
+    {
+      "id": "S07",
+      "role": "closing",
+      "type": "closing_brand",
+      "variant": "standard",
+      "surface": "light",
+      "motion": "restrained_lift",
+      "narration": "Big ideas. Briefly.",
+      "visual": {
+        "tagline": "Big ideas. Briefly.",
+        "closingLine": "Mathematics always wins."
+      }
+    }
+  ],
+  "packaging": {
+    "youtubeTitle": "How WeWork Burned $47 Billion in 4 Years (The Flawed Strategy)",
+    "instagramCaption": "The $47 Billion Illusion. 🏢📉\n\nHow do you burn billions in venture capital? Convince the world a real estate company is a tech startup. WeWork reached a $47B valuation in 2019 by ignoring unit economics and prioritizing relentless growth. By 2023, they filed for bankruptcy.\n\nThe fatal flaw? Arbitrage. Signing long-term leases while collecting short-term rent.\n\nThe crazy part? Founder Adam Neumann walked away with a $1.7 billion payout while the company crashed.\n\nCharisma raises money. But mathematics always wins.\n\nSources: WSJ, CNBC\n\n#wework #businessstrategy #adamneumann #startuptips #founder #investing #venturecapital #businesstok #entrepreneur",
+    "tiktokCaption": "How WeWork burned $47 BILLION in 4 years 📉🏢 The craziest business collapse in modern history. (Sources: WSJ, CNBC)\n\n#businesstok #wework #businessstrategy #startuptips #founderstories #moneytok #venturecapital",
+    "hashtags": [
+      "wework",
+      "strategy",
+      "startup",
+      "venturecapital",
+      "business"
+    ]
+  }
+}
