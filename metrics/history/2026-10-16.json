@@ -1,0 +1,85 @@
+{
+  "takenAt": "2026-10-16T06:14:45.936Z",
+  "instagram": {
+    "account": {
+      "error": "Error validating access token: Session has expired on Tuesday, 22-Sep-26 12:15:14 PDT. The current time is Thursday, 15-Oct-26 23:14:46 PDT."
+    }
+  },
+  "buffer": {
+    "channels": [
+      {
+        "service": "youtube",
+        "name": "Better In Brief",
+        "windowDays": 30,
+        "metricsUpdatedAt": null,
+        "metrics": {
+          "postCount": 0,
+          "reactions": 0,
+          "comments": 0,
+          "engagementRate": "0%",
+          "views": 0
+        }
+      },
+      {
+        "service": "tiktok",
+        "name": "betterinbrief",
+        "windowDays": 30,
+        "metricsUpdatedAt": null,
+        "metrics": {
+          "postCount": 0,
+          "reactions": 0,
+          "comments": 0,
+          "engagementRate": "0%",
+          "views": 0,
+          "shares": 0,
+          "reach": 0,
+          "totalTimeWatched": 0,
+          "averageTimeWatched": 0
+        }
+      }
+    ]
+  },
+  "youtube": {
+    "channel": {
+      "id": "UCmcl3M92Py7CGQozYZSnXHQ",
+      "title": "Better In Brief",
+      "subscribers": "0",
+      "totalViews": "703",
+      "videoCount": "4"
+    },
+    "videos": [
+      {
+        "id": "44JPv1t6UuQ",
+        "title": "Job Switchers Out-Earn Loyal Employees Again - Fed Data Explains",
+        "publishedAt": "2026-07-25T23:11:59Z",
+        "views": "13",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "oNCyQxw_UHQ",
+        "title": "Same Job Title. 62% More Pay. Here's the Skill Gap.",
+        "publishedAt": "2026-07-25T08:09:17Z",
+        "views": "281",
+        "likes": "1",
+        "comments": "0"
+      },
+      {
+        "id": "1fU-2SwN17s",
+        "title": "AI Could Affect 1 in 4 Workers — But Not How You Think",
+        "publishedAt": "2026-07-22T22:38:58Z",
+        "views": "8",
+        "likes": "0",
+        "comments": "0"
+      },
+      {
+        "id": "3VOFv5d2Q6g",
+        "title": "AI Is Splitting Careers Into Two Tracks — Which One Are You On?",
+        "publishedAt": "2026-07-22T14:03:03Z",
+        "views": "401",
+        "likes": "3",
+        "comments": "0"
+      }
+    ]
+  }
+}
