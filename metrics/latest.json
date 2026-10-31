@@ -1,8 +1,8 @@
 {
-  "takenAt": "2026-10-30T07:39:36.221Z",
+  "takenAt": "2026-10-31T07:25:32.049Z",
   "instagram": {
     "account": {
-      "error": "Error validating access token: Session has expired on Tuesday, 22-Sep-26 12:15:14 PDT. The current time is Friday, 30-Oct-26 00:39:36 PDT."
+      "error": "Error validating access token: Session has expired on Tuesday, 22-Sep-26 12:15:14 PDT. The current time is Saturday, 31-Oct-26 00:25:32 PDT."
     }
   },
   "buffer": {
